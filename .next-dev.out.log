@@ -1,0 +1,72 @@
+
+> lighthouse-nextjs@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.12 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.68.102:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+   Using tsconfig file: ./tsconfig.json
+ ✓ Ready in 1953ms
+ ○ Compiling /api/queries ...
+ ✓ Compiled /api/queries in 3.8s
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+{"level":"INFO","message":"[1:57:25.723 PM]: Creating new connection object"}
+{"level":"INFO","message":"[1:57:25.742 PM]: Creating Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] with host: gd96370.uae-north.azure.snowflakecomputing.com, account: gd96370, accessUrl: https://gd96370.uae-north.azure.snowflakecomputing.com, user: AKSHAY_MOHAN, role: ACCOUNTADMIN, database: MART_DB, schema: LIGHTHOUSE_MART, warehouse: DEV_WH, proxy was not configured, password is provided, region: uae-north.azure, authenticator: SNOWFLAKE, ocsp mode: FAIL_OPEN, os: win32, os version: 10.0.26200"}
+{"level":"INFO","message":"[1:57:25.744 PM]: Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] additional details: passcode in password is provided, passcode is not provided, private key is not provided, application: undefined, client name: snowflake-sdk, client version: 2.3.4, retry timeout: 300, private key path: undefined, private key pass is not provided, client store temporary credential: false, browser response timeout: 120000"}
+{"level":"INFO","message":"[1:57:25.745 PM]: Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] - connection object created successfully."}
+{"level":"INFO","message":"[1:57:25.746 PM]: Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] - connecting. Associated Snowflake domain: GLOBAL"}
+{"level":"INFO","message":"[1:57:25.748 PM]: Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] - authentication successful using: SNOWFLAKE"}
+{"level":"INFO","message":"[1:57:25.749 PM]: Trying to initialize Easy Logging"}
+{"level":"INFO","message":"[1:57:25.752 PM]: No client config detected."}
+{"level":"INFO","message":"[1:57:25.753 PM]: No config file path found. Client config will not be used."}
+{"level":"INFO","message":"[1:57:25.755 PM]: Easy Logging is disabled as no config has been found"}
+{"level":"INFO","message":"[1:57:26.325 PM]: Connection[id: cbd71211-a01e-418c-a4cc-93506d63edfa] - connection established successfully after 578.54 milliseconds"}
+Connected to Snowflake
+ GET /api/queries?type=high-frequency&start=2026-01-26&end=2026-02-25 200 in 6851ms
+ ○ Compiling /api/warehouses ...
+ ✓ Compiled /api/warehouses in 876ms
+ GET /api/warehouses?type=by_user&start=2026-01-26&end=2026-02-25 200 in 1548ms
+ GET /api/warehouses?type=mixed&start=2026-01-26&end=2026-02-25 200 in 675ms
+ ○ Compiling /api/storage ...
+ ✓ Compiled /api/storage in 791ms
+ GET /api/storage?type=summary_kpi&start=2026-01-26&end=2026-02-25 200 in 1380ms
+ GET /api/storage?type=top_databases&start=2026-01-26&end=2026-02-25 200 in 528ms
+ GET /api/storage?type=overall&start=2026-01-26&end=2026-02-25 200 in 597ms
+ GET /api/storage?type=stage_bytes 200 in 585ms
+ GET /api/storage?type=most_accessed&start=2026-01-26&end=2026-02-25 200 in 652ms
+ GET /api/storage?type=least_accessed&start=2026-01-26&end=2026-02-25 200 in 571ms
+ GET /api/storage?type=large_unused&start=2026-01-26&end=2026-02-25 200 in 545ms
+ ○ Compiling /api/identity ...
+ ✓ Compiled /api/identity in 818ms
+ GET /api/identity?type=inactive_users 200 in 1427ms
+ GET /api/identity?type=users_without_mfa 200 in 555ms
+ GET /api/identity?type=auth_method_success&startDate=2026-01-26&endDate=2026-02-25 200 in 617ms
+ GET /api/identity?type=accountadmin_grants&startDate=2026-01-26&endDate=2026-02-25 200 in 569ms
+ GET /api/identity?type=accountadmin_no_mfa 200 in 592ms
+ GET /api/identity?type=oldest_passwords 200 in 647ms
+ ○ Compiling /api/recommendations ...
+ ✓ Compiled /api/recommendations in 643ms
+ GET /api/recommendations?type=list&start=2026-01-26&end=2026-02-25 200 in 1334ms
+ GET /api/recommendations?type=list&start=2026-01-26&end=2026-02-25 200 in 736ms
+ GET /api/recommendations?type=evidence&runDate=2026-02-23&findingId=7110f10d8051de45a68eea7a5219f612 200 in 578ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.5s
+ GET / 200 in 5575ms
+ ○ Compiling /queries ...
+ ✓ Compiled /queries in 995ms
+ GET /queries 200 in 1244ms
+ ○ Compiling /warehouses ...
+ ✓ Compiled /warehouses in 812ms
+ GET /warehouses 200 in 1011ms
+ ○ Compiling /storage ...
+ ✓ Compiled /storage in 789ms
+ GET /storage 200 in 1032ms
+ ○ Compiling /identity ...
+ ✓ Compiled /identity in 894ms
+ GET /identity 200 in 1120ms
+ ✓ Compiled /recommendations in 422ms
+ GET /recommendations 200 in 624ms
+[?25h
