@@ -4,6 +4,7 @@ import { Menu, Bell, Settings, User, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import useFetch from '@/hooks/useApi'
 import { DEFAULT_USD_PER_CREDIT, useDisplaySettingsStore } from '@/stores/displaySettings'
+import { useNotifications } from '@/hooks/useNotifications'
 
 export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -13,6 +14,11 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const usdPerCredit = useDisplaySettingsStore((s) => s.usdPerCredit)
   const setSpendDisplayMode = useDisplaySettingsStore((s) => s.setSpendDisplayMode)
   const setUsdPerCredit = useDisplaySettingsStore((s) => s.setUsdPerCredit)
+  const {
+    data: notifications,
+    isLoading: notificationsLoading,
+    isError: notificationsError,
+  } = useNotifications()
   const [usdRateDraft, setUsdRateDraft] = useState(String(usdPerCredit || DEFAULT_USD_PER_CREDIT))
   const { data: refreshStatus, error: refreshError } = useFetch<{ formatted: string }>(
     ['header-last-refresh'],
@@ -62,36 +68,37 @@ export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
                   </button>
                 </div>
                 <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                  <div className="p-3 bg-slate-600/50 rounded-lg border border-slate-600 hover:bg-slate-600 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">Warehouse Performance</p>
-                        <p className="text-xs text-slate-400 mt-1">Query queue ratio exceeded 0.8 on COMPUTE_WH</p>
-                        <p className="text-xs text-slate-500 mt-2">2 minutes ago</p>
+                  {notificationsLoading ? (
+                    <div className="text-xs text-slate-400">Loading...</div>
+                  ) : notificationsError ? (
+                    <div className="text-xs text-red-400">Failed to load notifications</div>
+                  ) : notifications && notifications.length ? (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className="p-3 bg-slate-600/50 rounded-lg border border-slate-600 hover:bg-slate-600 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                              n.level === 'error'
+                                ? 'bg-red-500'
+                                : n.level === 'warning'
+                                ? 'bg-yellow-500'
+                                : 'bg-blue-500'
+                            }`}
+                          ></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white">{n.title}</p>
+                            <p className="text-xs text-slate-400 mt-1">{n.message}</p>
+                            <p className="text-xs text-slate-500 mt-2">{n.ago}</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="p-3 bg-slate-600/50 rounded-lg border border-slate-600 hover:bg-slate-600 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">Storage Alert</p>
-                        <p className="text-xs text-slate-400 mt-1">Database storage growing at 15GB/day</p>
-                        <p className="text-xs text-slate-500 mt-2">15 minutes ago</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3 bg-slate-600/50 rounded-lg border border-slate-600 hover:bg-slate-600 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">System Update</p>
-                        <p className="text-xs text-slate-400 mt-1">Snowflake connection optimized</p>
-                        <p className="text-xs text-slate-500 mt-2">1 hour ago</p>
-                      </div>
-                    </div>
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-slate-400">No notifications.</div>
+                  )}
                 </div>
                 <div className="p-3 border-t border-slate-600 text-center">
                   <button className="text-xs text-blue-400 hover:text-blue-300 font-medium">View all notifications</button>
