@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from "next/image";
 import {
   BarChart3,
   Zap,
@@ -126,24 +127,35 @@ export default function Sidebar({
         className="fixed z-40 h-screen glass border-r border-slate-700/50 flex flex-col left-0 top-0 overflow-hidden"
       >
         {/* Logo */}
-        <div className={`flex items-center gap-3 px-6 py-6 border-b border-slate-700/50 ${isCollapsed ? 'justify-center px-0' : ''}`}>
-          <div className="w-10 h-10 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <BarChart3 className="w-6 h-6 text-white" />
-          </div>
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                className="flex-1 whitespace-nowrap"
-              >
-                <h1 className="text-xl font-bold text-white tracking-tight">Lighthouse</h1>
-                <p className="text-xs text-blue-400 font-medium">Snowflake Monitor</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <div
+  className={`flex items-center gap-3 px-6 py-6 border-b border-slate-700/50 ${
+    isCollapsed ? "justify-center px-0" : ""
+  }`}
+>
+  <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden">
+    <Image
+      src="/spectra.svg"
+      alt="Spectra Logo"
+      width={40}
+      height={40}
+      className="object-contain"
+    />
+  </div>
+
+  <AnimatePresence mode="wait">
+    {!isCollapsed && (
+      <motion.div
+        initial={{ opacity: 0, width: 0 }}
+        animate={{ opacity: 1, width: "auto" }}
+        exit={{ opacity: 0, width: 0 }}
+        className="flex-1 whitespace-nowrap"
+      >
+        <h1 className="text-xl font-bold text-white tracking-tight">Lighthouse</h1>
+        <p className="text-xs text-blue-400 font-medium">Snowflake Monitor</p>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-6 scrollbar-hide">

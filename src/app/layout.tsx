@@ -1,30 +1,30 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import { Providers } from './providers'
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Lighthouse - Snowflake Monitoring',
-  description: 'Advanced Snowflake warehouse monitoring and optimization with AI insights',
-}
+  title: "Lighthouse",
+  description:
+    "Advanced Snowflake warehouse monitoring and optimization with AI insights",
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+  icons: {
+    icon: "/spectra.svg", // browser tab icon
+    shortcut: "/spectra.svg",
+    apple: "/spectra.svg",
+  },
+};
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/svg+xml" href="/spectra.svg" />
       </head>
       <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
-  )
+  );
 }
