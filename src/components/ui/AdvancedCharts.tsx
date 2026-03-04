@@ -2,16 +2,14 @@
 
 import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-interface HeatmapChartProps {
-  data: Array<{ DAY_OF_WEEK: number | string; HOUR_OF_DAY: number | string; QUERY_COUNT: number | string }>;
-  height?: number;
-}
-
-// Custom tooltip for Recharts with better styling
-const CustomTooltip = ({ active, payload }: any) => {
+// ==========================================
+// 1. CUSTOM TOOLTIP
+// ==========================================
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-slate-900 border border-slate-600 rounded px-3 py-2 shadow-lg">
+        {label && <p className="text-sm font-bold text-slate-200 mb-1">{label}</p>}
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm font-medium">
             {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
@@ -23,19 +21,22 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+// ==========================================
+// 2. HEATMAP CHART
+// ==========================================
+interface HeatmapChartProps {
+  data: Array<{ DAY_OF_WEEK: number | string; HOUR_OF_DAY: number | string; QUERY_COUNT: number | string }>;
+  height?: number;
+}
+
 export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
   if (!data || data.length === 0) {
     return <div className="h-96 flex items-center justify-center text-slate-500">No data available</div>;
   }
 
-  // Streamlit uses a pivot over DAY_OF_WEEK x HOUR_OF_DAY and fills missing cells with 0.
-  // The mart can expose day values as 0-6, 1-7, or text labels depending on pipeline/version,
-  // so normalize here before building the 7x24 grid.
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const grid = Array(7)
-    .fill(null)
-    .map(() => Array(24).fill(0));
+  const grid = Array(7).fill(null).map(() => Array(24).fill(0));
   let maxValue = 0;
 
   const toNumber = (value: unknown): number | null => {
@@ -47,23 +48,15 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
     if (typeof value === "string") {
       const s = value.trim().toLowerCase();
       const byName: Record<string, number> = {
-        sun: 0, sunday: 0,
-        mon: 1, monday: 1,
-        tue: 2, tues: 2, tuesday: 2,
-        wed: 3, wednesday: 3,
-        thu: 4, thur: 4, thurs: 4, thursday: 4,
-        fri: 5, friday: 5,
-        sat: 6, saturday: 6,
+        sun: 0, sunday: 0, mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2,
+        wed: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4,
+        fri: 5, friday: 5, sat: 6, saturday: 6,
       };
       if (s in byName) return byName[s];
     }
-
     const n = toNumber(value);
     if (n === null) return null;
-    // Accept common encodings:
-    // 0..6 => Sunday..Saturday
     if (n >= 0 && n <= 6) return Math.trunc(n);
-    // 1..7 => Monday..Sunday (common SQL DOW encoding)
     if (n >= 1 && n <= 7) return n === 7 ? 0 : Math.trunc(n);
     return null;
   };
@@ -76,12 +69,12 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
     if (hour < 0 || hour > 23) return;
 
     const hourIdx = Math.trunc(hour);
-    // Sum values to mirror pivot_table(..., aggfunc="sum") in Streamlit.
     grid[dayIdx][hourIdx] += count;
     maxValue = Math.max(maxValue, grid[dayIdx][hourIdx]);
   });
 
-  const colorStops = ["#0f172a", "#1d4ed8", "#38bdf8", "#facc15", "#fb923c", "#ef4444"];
+  // PROFESSIONAL UPDATE: "Ocean" sequential color map
+  const colorStops = ["#0f172a", "#1e3a8a", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"];
   const interpolateColor = (value: number) => {
     if (value <= 0 || maxValue <= 0) return "#0f172a";
     const t = Math.max(0, Math.min(1, value / maxValue));
@@ -101,7 +94,7 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
     return `rgb(${mix(a.r, b.r)}, ${mix(a.g, b.g)}, ${mix(a.b, b.b)})`;
   };
 
-  const margin = { top: 16, right: 16, bottom: 30, left: 44 };
+  const margin = { top: 16, right: 16, bottom: 40, left: 54 }; 
   const cellW = 20;
   const cellH = 24;
   const chartW = 24 * cellW;
@@ -114,16 +107,17 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-slate-100">Query Volume by Day & Hour</h3>
         <div className="flex gap-2 text-xs">
+          {/* PROFESSIONAL UPDATE: Matched Legend Colors to the Ocean Theme */}
           <div className="flex items-center gap-1">
-            <div className="w-4 h-3 bg-blue-200"></div>
+            <div className="w-4 h-3 bg-[#1e3a8a] rounded-sm"></div>
             <span className="text-slate-300">Low</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-4 h-3 bg-yellow-400"></div>
+            <div className="w-4 h-3 bg-[#3b82f6] rounded-sm"></div>
             <span className="text-slate-300">Medium</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-4 h-3 bg-red-500"></div>
+            <div className="w-4 h-3 bg-[#93c5fd] rounded-sm"></div>
             <span className="text-slate-300">High</span>
           </div>
         </div>
@@ -136,32 +130,17 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
             className="w-full"
             style={{ height: Math.max(220, height - 72) }}
             role="img"
-            aria-label="Heatmap of query volume by day of week and hour of day"
           >
             <rect x={0} y={0} width={svgW} height={svgH} fill="transparent" />
 
             {hours.map((h) => (
-              <text
-                key={`x-${h}`}
-                x={margin.left + h * cellW + cellW / 2}
-                y={margin.top - 4}
-                textAnchor="middle"
-                fontSize="10"
-                fill="#94a3b8"
-              >
+              <text key={`x-${h}`} x={margin.left + h * cellW + cellW / 2} y={margin.top - 4} textAnchor="middle" fontSize="10" fill="#94a3b8">
                 {h}
               </text>
             ))}
 
             {days.map((day, dayIdx) => (
-              <text
-                key={`y-${day}`}
-                x={margin.left - 6}
-                y={margin.top + dayIdx * cellH + cellH / 2 + 3}
-                textAnchor="end"
-                fontSize="11"
-                fill="#cbd5e1"
-              >
+              <text key={`y-${day}`} x={margin.left - 6} y={margin.top + dayIdx * cellH + cellH / 2 + 3} textAnchor="end" fontSize="11" fill="#cbd5e1">
                 {day}
               </text>
             ))}
@@ -172,26 +151,11 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
                 const y = margin.top + dayIdx * cellH;
                 return (
                   <g key={`${dayIdx}-${hourIdx}`}>
-                    <rect
-                      x={x}
-                      y={y}
-                      width={cellW - 1}
-                      height={cellH - 1}
-                      rx={2}
-                      fill={interpolateColor(value)}
-                      stroke="rgba(148,163,184,0.10)"
-                    >
+                    <rect x={x} y={y} width={cellW - 1} height={cellH - 1} rx={2} fill={interpolateColor(value)} stroke="rgba(148,163,184,0.10)">
                       <title>{`${days[dayIdx]} ${hourIdx}:00 - ${value} queries`}</title>
                     </rect>
                     {value > 0 && value === maxValue && (
-                      <text
-                        x={x + cellW / 2}
-                        y={y + cellH / 2 + 3}
-                        textAnchor="middle"
-                        fontSize="9"
-                        fill="#ffffff"
-                        fontWeight="700"
-                      >
+                      <text x={x + cellW / 2} y={y + cellH / 2 + 3} textAnchor="middle" fontSize="9" fill="#ffffff" fontWeight="700">
                         {Math.round(value)}
                       </text>
                     )}
@@ -200,29 +164,24 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
               })
             )}
 
-            <text x={margin.left + chartW / 2} y={svgH - 4} textAnchor="middle" fontSize="11" fill="#94a3b8">
-              Hour
+            <text x={margin.left + chartW / 2} y={svgH - 10} textAnchor="middle" fontSize="12" fontWeight="600" fill="#cbd5e1" className="uppercase tracking-wider">
+              Hour of Day
+            </text>
+            
+            <text x={-(margin.top + chartH / 2)} y={15} transform="rotate(-90)" textAnchor="middle" fontSize="12" fontWeight="600" fill="#cbd5e1" className="uppercase tracking-wider">
+              Day of Week
             </text>
           </svg>
         </div>
-      </div>
-
-      <div className="mt-3 flex items-center gap-3 text-xs text-slate-300">
-        <span className="text-slate-400">Queries</span>
-        <div className="flex items-center gap-0.5">
-          {Array.from({ length: 12 }, (_, i) => {
-            const v = (maxValue * i) / 11;
-            return <div key={i} className="h-2.5 w-4 rounded-sm" style={{ backgroundColor: interpolateColor(v) }} />;
-          })}
-        </div>
-        <span className="text-slate-500">0</span>
-        <span className="text-slate-500">to</span>
-        <span className="text-slate-200">{Math.round(maxValue)}</span>
       </div>
     </div>
   );
 }
 
+
+// ==========================================
+// 3. DUAL AXIS CHART
+// ==========================================
 interface DualAxisChartProps {
   data: Array<{ [key: string]: any }>;
   xKey: string;
@@ -235,41 +194,88 @@ interface DualAxisChartProps {
 
 export function DualAxisChart({ data, xKey, barKey, lineKey, barLabel, lineLabel, height = 360 }: DualAxisChartProps) {
   return (
-    <div className="w-full">
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={{ left: 4, right: 8, top: 12, bottom: 28 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-          <XAxis
-            dataKey={xKey}
-            angle={-35}
-            textAnchor="end"
-            height={64}
-            minTickGap={20}
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
-            stroke="#94a3b8"
-          />
-          <YAxis yAxisId="left" stroke="#94a3b8" width={52} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-          <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" width={44} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            verticalAlign="top"
-            height={24}
-            iconType="circle"
-            wrapperStyle={{ color: '#cbd5e1', fontSize: '12px', paddingBottom: '2px' }}
-          />
-          <Bar yAxisId="left" dataKey={barKey} fill="#3b82f6" name={barLabel || barKey} radius={[2, 2, 0, 0]} />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey={lineKey}
-            stroke="#f59e0b"
-            strokeWidth={2}
-            dot={{ r: 2 }}
-            activeDot={{ r: 4 }}
-            name={lineLabel || lineKey}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div className="w-full flex flex-col items-center">
+      
+      {/* 1. Hardcoded Custom Legend */}
+      <div className="flex justify-center gap-6 mb-4">
+        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+          {/* PROFESSIONAL UPDATE: Legend dot matches Deep Blue */}
+          <div className="w-3 h-3 rounded-full bg-[#1e40af]"></div>
+          {barLabel || barKey}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+          {/* PROFESSIONAL UPDATE: Legend dot matches Rose Red */}
+          <div className="w-3 h-3 rounded-full bg-[#fb7185]"></div>
+          {lineLabel || lineKey}
+        </div>
+      </div>
+
+      <div className="flex w-full items-center">
+        
+        <div className="flex items-center justify-center w-8">
+          <span className="text-slate-400 text-xs font-bold tracking-wider -rotate-90 whitespace-nowrap">
+            {barLabel || barKey}
+          </span>
+        </div>
+
+        <div className="flex-1" style={{ height: height - 60 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ left: 0, right: 0, top: 10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} />
+              
+              <XAxis 
+                dataKey={xKey} 
+                angle={-35} 
+                textAnchor="end" 
+                height={60} 
+                minTickGap={20} 
+                tick={{ fill: '#94a3b8', fontSize: 11 }} 
+                stroke="#94a3b8" 
+                dy={10} 
+              />
+              
+              <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
+              <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
+              
+              <Tooltip content={<CustomTooltip />} />
+              
+              {/* PROFESSIONAL UPDATE: Muted Deep Blue for Volume Bars */}
+              <Bar 
+                yAxisId="left" 
+                dataKey={barKey} 
+                fill="#1e40af" 
+                name={barLabel || barKey} 
+                radius={[2, 2, 0, 0]} 
+              />
+              
+              {/* PROFESSIONAL UPDATE: Sharp Rose/Red for Latency Line */}
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey={lineKey}
+                stroke="#fb7185"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 5, fill: '#fb7185', strokeWidth: 0 }}
+                name={lineLabel || lineKey}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="flex items-center justify-center w-8">
+          <span className="text-slate-400 text-xs font-bold tracking-wider rotate-90 whitespace-nowrap">
+            {lineLabel || lineKey}
+          </span>
+        </div>
+      </div>
+
+      <div className="w-full text-center mt-2">
+        <span className="text-slate-400 text-xs font-bold tracking-wider uppercase">
+          Timeline
+        </span>
+      </div>
+
     </div>
   );
 }

@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Primary colors */
+    /* Primary base colors (RGB format for Tailwind compatibility) */
     --primary: 29 78 216;
     --primary-dark: 30 58 138;
     --primary-light: 59 130 246;
@@ -19,76 +19,106 @@
     
     --border: 71 85 105;
     --border-light: 100 116 139;
+
+    /* Glassmorphism System Variables */
+    --glass-bg: rgba(30, 41, 59, 0.45);        /* Semi-transparent surface */
+    --glass-bg-hover: rgba(30, 41, 59, 0.65);  /* Darker on hover */
+    --glass-border: rgba(255, 255, 255, 0.08); /* Subtle white border */
+    --glass-highlight: rgba(255, 255, 255, 0.03); /* Header/Highlight areas */
+    --glass-blur: 16px;                        /* Frost effect strength */
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   }
 }
 
 @layer components {
+  /* Richer gradient background to make the glass effect pop */
   .app-container {
-    @apply min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900;
+    @apply min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-200;
   }
 
+  /* Core Glass Utility */
+  .glass {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* KPI Cards - Modernized */
   .kpi-card {
-    @apply bg-gradient-kpi text-white rounded-lg p-4 shadow-lg border border-white border-opacity-10;
+    @apply glass text-white rounded-xl p-5 transition-all duration-300 hover:-translate-y-1;
+  }
+  
+  .kpi-card:hover {
+    background-color: var(--glass-bg-hover);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .kpi-label {
-    @apply text-sm font-semibold uppercase tracking-wider opacity-90;
+    @apply text-sm font-medium uppercase tracking-wider text-slate-300;
   }
 
   .kpi-value {
-    @apply text-3xl font-bold mt-2;
+    @apply text-3xl font-bold mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400;
   }
 
+  /* Standard Cards/Panels */
   .card {
-    @apply bg-slate-800 border border-slate-700 rounded-lg shadow-lg hover:shadow-xl transition-shadow;
+    @apply glass rounded-xl overflow-hidden transition-all duration-300;
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-slate-700;
+    @apply px-6 py-4 border-b;
+    border-color: var(--glass-border);
+    background-color: var(--glass-highlight);
   }
 
   .card-body {
     @apply p-6;
   }
 
+  /* Interactive Elements - Glassy Buttons & Inputs */
   .btn-primary {
-    @apply px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-light transition-colors;
+    @apply px-4 py-2 bg-blue-600/80 text-white rounded-lg font-medium backdrop-blur-sm border border-blue-400/30 hover:bg-blue-500/90 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition-colors;
+    @apply px-4 py-2 bg-slate-700/50 text-white rounded-lg font-medium backdrop-blur-sm border border-slate-500/30 hover:bg-slate-600/60 transition-all;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-primary focus:outline-none transition-colors;
+    @apply w-full px-4 py-2 bg-slate-900/50 text-white rounded-lg border border-slate-600/50 backdrop-blur-sm focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all;
   }
 
+  /* Badges */
   .badge {
-    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold;
+    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border;
   }
 
   .badge-primary {
-    @apply badge bg-blue-900 text-blue-100;
+    @apply bg-blue-900/40 text-blue-200 border-blue-700/50;
   }
 
   .badge-success {
-    @apply badge bg-green-900 text-green-100;
+    @apply bg-green-900/40 text-green-200 border-green-700/50;
   }
 
   .badge-warning {
-    @apply badge bg-yellow-900 text-yellow-100;
+    @apply bg-yellow-900/40 text-yellow-200 border-yellow-700/50;
   }
 
   .badge-danger {
-    @apply badge bg-red-900 text-red-100;
+    @apply bg-red-900/40 text-red-200 border-red-700/50;
   }
 
+  /* Charts & Tables */
   .chart-container {
-    @apply bg-slate-800 rounded-lg p-6 border border-slate-700;
+    @apply glass rounded-xl p-6;
   }
 
   .table-container {
-    @apply overflow-x-auto;
+    @apply overflow-x-auto rounded-xl border border-white/5;
   }
 
   .table {
@@ -96,11 +126,11 @@
   }
 
   .table-header {
-    @apply bg-slate-700 text-slate-100 font-semibold text-sm uppercase;
+    @apply bg-slate-800/60 backdrop-blur-md text-slate-200 font-semibold text-sm uppercase border-b border-white/10;
   }
 
   .table-row {
-    @apply border-b border-slate-700 hover:bg-slate-700 transition-colors;
+    @apply border-b border-white/5 hover:bg-white/5 transition-colors;
   }
 
   .table-cell {
@@ -121,33 +151,29 @@ html {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - Glassy dark mode */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(30, 41, 59);
+  background: rgba(15, 23, 42, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(71, 85, 105);
+  background: rgba(100, 116, 139, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(100, 116, 139);
+  background: rgba(148, 163, 184, 0.8);
 }

@@ -20,11 +20,11 @@ function parseLastRefresh(raw: string | null): Date | null {
   return Number.isNaN(fallback.getTime()) ? null : fallback
 }
 
-function formatKsaTimestamp(date: Date | null): string {
+function formatLocalTimestamp(date: Date | null): string {
   if (!date) return '-'
 
   const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Riyadh',
+    timeZone: 'Asia/Kolkata', // Set to Indian Standard Time (IST)
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -34,7 +34,9 @@ function formatKsaTimestamp(date: Date | null): string {
   }).formatToParts(date)
 
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
-  return `${get('day')} ${get('month')} ${get('year')} • ${get('hour')}:${get('minute')} ${get('dayPeriod')} KSA`
+  
+  // Removed the hardcoded 'KSA' and replaced it with 'IST'
+  return `${get('day')} ${get('month')} ${get('year')} • ${get('hour')}:${get('minute')} ${get('dayPeriod')} IST`
 }
 
 export async function GET(request: NextRequest) {
@@ -55,10 +57,12 @@ export async function GET(request: NextRequest) {
 
     const raw = await getLastMartRefreshTimestamp()
     const parsed = parseLastRefresh(raw)
+    
+    // Updated to use the new formatting function
     const data = {
       raw: raw ?? null,
       iso: parsed ? parsed.toISOString() : null,
-      formatted: formatKsaTimestamp(parsed),
+      formatted: formatLocalTimestamp(parsed), 
     }
 
     return NextResponse.json<APIResponse<typeof data>>(
