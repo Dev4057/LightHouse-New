@@ -176,7 +176,7 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
    * Added `overflow-hidden` so that no child element (chart, table) can bleed
    * outside the card boundary and push the page wider.
    */
-  const cardClass = "bg-slate-900/60 backdrop-blur-xl border-slate-700/50 shadow-xl overflow-hidden w-full min-w-0 flex flex-col"
+  const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-xl overflow-hidden w-full min-w-0 flex flex-col"
   const thClass = "py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
   const tdClass = "py-3 px-4 text-xs"
 
@@ -261,48 +261,79 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
             </CardContent>
           </Card>
 
-          {/* Service Type Credits */}
-          <Card className={cardClass}>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-slate-100 uppercase tracking-wider border-l-2 border-indigo-500 pl-3">
-                {creditUnitLabel} by Service Type
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-400 pl-3.5 mt-1">
-                Compute, storage, and cloud services breakdown
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-2 flex-1 flex flex-col min-w-0">
-              {services && services.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 300 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={services.map((row) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS) }))}
-                        dataKey="TOTAL_SPEND_DISPLAY"
-                        nameKey="SERVICE_TYPE"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        innerRadius={60}
-                        paddingAngle={2}
-                      >
-                        {services.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} stroke="rgba(0,0,0,0.2)" />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={glassTooltipStyle} formatter={(v) => formatCreditValue(v as number)} />
-                      <Legend wrapperStyle={{ fontSize: '11px', color: '#94a3b8', paddingTop: '10px' }} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <EmptyState icon={Activity} title="No Service Data" desc="No service consumption recorded." />
-              )}
-              <div className="mt-4 pt-4 border-t border-slate-800/50">
-                <WidgetAIInsight title="Credit Consumption by Service Type" widgetType="cost_analysis" dateRange={dateRange} widgetId="wh_service_type_credits" widgetKind="chart" templateKey="warehouse_cost_distribution" dataSample={services?.slice(0, 25) ?? []} />
+{/* Service Type Credits */}
+        <Card className={cardClass}>
+          <CardHeader className="pb-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-indigo-500 pl-3">
+              {creditUnitLabel} by Service Type
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
+              Compute, storage, and cloud services breakdown
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 flex-1 flex flex-col min-w-0 p-6">
+            {services && services.length > 0 ? (
+              <div className="w-full overflow-hidden" style={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    {/* 1. DEFINE BEAUTIFUL GRADIENTS FOR EACH SLICE */}
+                    <defs>
+                      <linearGradient id="pieGrad0" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#1e3a8a" stopOpacity={0.7} />
+                      </linearGradient>
+                      <linearGradient id="pieGrad1" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#4c1d95" stopOpacity={0.7} />
+                      </linearGradient>
+                      <linearGradient id="pieGrad2" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#0f766e" stopOpacity={0.7} />
+                      </linearGradient>
+                      <linearGradient id="pieGrad3" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#0369a1" stopOpacity={0.7} />
+                      </linearGradient>
+                      <linearGradient id="pieGrad4" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#9f1239" stopOpacity={0.7} />
+                      </linearGradient>
+                    </defs>
+
+                    <Pie
+                      data={services.map((row) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS) }))}
+                      dataKey="TOTAL_SPEND_DISPLAY"
+                      nameKey="SERVICE_TYPE"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      innerRadius={65}       /* Made it a sleeker, thinner donut */
+                      paddingAngle={3}       /* Added padding between slices */
+                      stroke="none"          /* Removed default Recharts stroke */
+                    >
+                      {services.map((_, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={`url(#pieGrad${index % 5})`} 
+                          /* Adds a subtle theme-aware border to each slice */
+                          stroke="rgba(148, 163, 184, 0.1)"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={glassTooltipStyle} formatter={(v) => formatCreditValue(v as number)} />
+                    <Legend wrapperStyle={{ fontSize: '11px', color: '#94a3b8', paddingTop: '10px' }} iconType="circle" />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <EmptyState icon={Activity} title="No Service Data" desc="No service consumption recorded." />
+            )}
+            <div className="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+              <WidgetAIInsight title="Credit Consumption by Service Type" widgetType="cost_analysis" dateRange={dateRange} widgetId="wh_service_type_credits" widgetKind="chart" templateKey="warehouse_cost_distribution" dataSample={services?.slice(0, 25) ?? []} />
+            </div>
+          </CardContent>
+        </Card>
         </div>
       </div>
 

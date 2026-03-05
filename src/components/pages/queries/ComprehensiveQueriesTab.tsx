@@ -121,7 +121,7 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
 
   // overflow-hidden on every card is the key containment fix —
   // no child (chart, table) can bleed outside and widen the page.
-const cardClass = "bg-slate-900/60 backdrop-blur-xl border-slate-700/50 shadow-xl overflow-hidden min-w-0 w-full flex flex-col";
+const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-xl overflow-hidden min-w-0 w-full flex flex-col";
   const thClass = "py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
   const tdClass = "py-3 px-4 text-xs"
 

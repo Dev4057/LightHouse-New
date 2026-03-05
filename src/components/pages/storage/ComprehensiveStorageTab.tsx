@@ -13,7 +13,7 @@ const PIE_COLORS = ['#3b82f6', '#0ea5e9', '#2dd4bf', '#8b5cf6', '#6366f1', '#4f4
 
 // ── GLASSMORPHISM TAILWIND CLASSES ───────────────────────────────────────────
 // These explicit classes guarantee the frosted glass look in both themes
-const glassCard = "bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 overflow-hidden transition-all duration-300"
+const glassCard = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 overflow-hidden transition-all duration-300"
 const glassHeader = "px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md"
 const glassTableHead = "bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-10 border-b border-slate-200/50 dark:border-slate-700/50"
 const glassRow = "border-b border-slate-200/50 dark:border-slate-800/50 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors group"

@@ -200,7 +200,7 @@ export function DualAxisChart({ data, xKey, barKey, lineKey, barLabel, lineLabel
       <div className="flex justify-center gap-6 mb-4">
         <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
           {/* PROFESSIONAL UPDATE: Legend dot matches Deep Blue */}
-          <div className="w-3 h-3 rounded-full bg-[#1e40af]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#8b5cf6]"></div>
           {barLabel || barKey}
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
@@ -219,48 +219,60 @@ export function DualAxisChart({ data, xKey, barKey, lineKey, barLabel, lineLabel
         </div>
 
         <div className="flex-1" style={{ height: height - 60 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ left: 0, right: 0, top: 10, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} />
-              
-              <XAxis 
-                dataKey={xKey} 
-                angle={-35} 
-                textAnchor="end" 
-                height={60} 
-                minTickGap={20} 
-                tick={{ fill: '#94a3b8', fontSize: 11 }} 
-                stroke="#94a3b8" 
-                dy={10} 
-              />
-              
-              <YAxis yAxisId="left" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
-              <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
-              
-              <Tooltip content={<CustomTooltip />} />
-              
-              {/* PROFESSIONAL UPDATE: Muted Deep Blue for Volume Bars */}
-              <Bar 
-                yAxisId="left" 
-                dataKey={barKey} 
-                fill="#1e40af" 
-                name={barLabel || barKey} 
-                radius={[2, 2, 0, 0]} 
-              />
-              
-              {/* PROFESSIONAL UPDATE: Sharp Rose/Red for Latency Line */}
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey={lineKey}
-                stroke="#fb7185"
-                strokeWidth={3}
-                dot={false}
-                activeDot={{ r: 5, fill: '#fb7185', strokeWidth: 0 }}
-                name={lineLabel || lineKey}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+<ResponsiveContainer width="100%" height="100%">
+  <ComposedChart data={data} margin={{ left: 0, right: 0, top: 10, bottom: 20 }}>
+    
+    {/* 1. ADDED THE PURPLE GRADIENT DEFINITION */}
+    <defs>
+      <linearGradient id="purpleTrendGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.9} />
+        <stop offset="100%" stopColor="#6366f1" stopOpacity={0.4} />
+      </linearGradient>
+    </defs>
+
+    <CartesianGrid strokeDasharray="3 3" stroke="#475569" vertical={false} />
+    
+    <XAxis 
+      dataKey={xKey} 
+      angle={-35} 
+      textAnchor="end" 
+      height={60} 
+      minTickGap={20} 
+      tick={{ fill: '#94a3b8', fontSize: 11 }} 
+      stroke="#64748b" 
+      tickLine={false}
+      axisLine={{ stroke: '#475569' }}
+      dy={10} 
+    />
+    
+    <YAxis yAxisId="left" stroke="#64748b" tickLine={false} axisLine={{ stroke: '#475569' }} tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
+    <YAxis yAxisId="right" orientation="right" stroke="#64748b" tickLine={false} axisLine={{ stroke: '#475569' }} tick={{ fill: '#94a3b8', fontSize: 11 }} width={45} />
+    
+    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+    
+    {/* 2. CHANGED FILL TO PURPLE GRADIENT */}
+    <Bar 
+      yAxisId="left" 
+      dataKey={barKey} 
+      fill="url(#purpleTrendGrad)" 
+      name={barLabel || barKey} 
+      radius={[4, 4, 0, 0]} 
+      maxBarSize={40}
+    />
+    
+    {/* RED LINE STAYS EXACTLY THE SAME */}
+    <Line
+      yAxisId="right"
+      type="monotone"
+      dataKey={lineKey}
+      stroke="#ef4444"
+      strokeWidth={3}
+      dot={{ r: 3, fill: '#ef4444', strokeWidth: 0 }}
+      activeDot={{ r: 6, fill: '#ef4444', strokeWidth: 0, stroke: '#ffffff' }}
+      name={lineLabel || lineKey}
+    />
+  </ComposedChart>
+</ResponsiveContainer>
         </div>
 
         <div className="flex items-center justify-center w-8">
