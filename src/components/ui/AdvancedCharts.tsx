@@ -8,8 +8,8 @@ import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 border border-slate-600 rounded px-3 py-2 shadow-lg">
-        {label && <p className="text-sm font-bold text-slate-200 mb-1">{label}</p>}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded px-3 py-2 shadow-lg">
+        {label && <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{label}</p>}
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm font-medium">
             {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
@@ -103,22 +103,21 @@ export function HeatmapChart({ data, height = 360 }: HeatmapChartProps) {
   const svgH = margin.top + chartH + margin.bottom;
 
   return (
-    <div className="w-full p-4 bg-slate-950/40 rounded-lg border border-slate-700" style={{ minHeight: height }}>
-      <div className="flex items-center justify-between mb-4">
+<div className="w-full p-4 bg-white/60 dark:bg-slate-950/40 rounded-lg border border-slate-200 dark:border-slate-700">      <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-slate-100">Query Volume by Day & Hour</h3>
         <div className="flex gap-2 text-xs">
           {/* PROFESSIONAL UPDATE: Matched Legend Colors to the Ocean Theme */}
           <div className="flex items-center gap-1">
             <div className="w-4 h-3 bg-[#1e3a8a] rounded-sm"></div>
-            <span className="text-slate-300">Low</span>
+<span className="text-slate-600 dark:text-slate-300">Low</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-4 h-3 bg-[#3b82f6] rounded-sm"></div>
-            <span className="text-slate-300">Medium</span>
+            <span className="text-slate-600 dark:text-slate-300">Medium</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-4 h-3 bg-[#93c5fd] rounded-sm"></div>
-            <span className="text-slate-300">High</span>
+            <span className="text-slate-600 dark:text-slate-300">High</span>
           </div>
         </div>
       </div>

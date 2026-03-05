@@ -18,13 +18,14 @@ export const metadata: Metadata = {
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" type="image/svg+xml" href="/spectra.svg" />
-      </head>
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+    // suppressHydrationWarning is highly recommended by next-themes 
+    // to prevent hydration mismatch errors on the <html> tag
+    <html lang="en" suppressHydrationWarning> 
+      <body className="antialiased transition-colors duration-300">
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
-  );
+  )
 }

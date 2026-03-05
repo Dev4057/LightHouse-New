@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronLeft, Bell, Settings, User, X, Search, Command as CmdIcon, Menu, Sun, Moon } from 'lucide-react'
+import { ChevronLeft, Bell, Settings, User, X, Search, Command as CmdIcon, Sun, Moon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
@@ -18,8 +18,8 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
   const [cmdkOpen, setCmdkOpen] = useState(false)
   
   // Theme State
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+const { resolvedTheme, setTheme } = useTheme()
+const [mounted, setMounted] = useState(false)
 
   const spendDisplayMode = useDisplaySettingsStore((s) => s.spendDisplayMode)
   const usdPerCredit = useDisplaySettingsStore((s) => s.usdPerCredit)
@@ -62,14 +62,14 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
   }
 
   return (
-    <header className="bg-white/80 dark:bg-transparent dark:glass border-b border-slate-200 dark:border-slate-700/50 sticky top-0 z-20 backdrop-blur-md transition-colors duration-300">
+    <header className="bg-white/80 dark:bg-[#0a0e1a]/80 border-b border-slate-200 dark:border-slate-700/50 sticky top-0 z-20 backdrop-blur-md transition-colors duration-300">
       <div className="px-6 py-3 flex items-center justify-between">
         
         {/* Left side */}
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={onMenuClick}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white group"
           >
             <ChevronLeft 
               className={`w-5 h-5 transition-transform duration-300 transform ${
@@ -97,12 +97,12 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
           {/* Theme Toggle Button */}
           {mounted && (
             <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors group"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
               aria-label="Toggle Dark Mode"
             >
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5 text-slate-400 group-hover:text-yellow-400 transition-colors" />
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
               ) : (
                 <Moon className="w-5 h-5 text-slate-500 group-hover:text-slate-900 transition-colors" />
               )}
@@ -117,19 +117,19 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                 setShowSettings(false)
                 setShowUserMenu(false)
               }}
-              className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors group"
+              className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
             >
               <Bell className="w-5 h-5 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
             </button>
 
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
                   <h3 className="font-semibold text-slate-900 dark:text-white">Notifications</h3>
                   <button
                     onClick={() => setShowNotifications(false)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
+                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                   >
                     <X className="w-4 h-4 text-slate-400 hover:text-slate-900 dark:hover:text-white" />
                   </button>
@@ -143,7 +143,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                     notifications.map((n) => (
                       <div
                         key={n.id}
-                        className="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-600/30 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                        className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           <div
@@ -151,7 +151,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                               n.level === 'error'
                                 ? 'bg-red-500 dark:shadow-red-500/50'
                                 : n.level === 'warning'
-                                ? 'bg-yellow-500 dark:shadow-yellow-500/50'
+                                ? 'bg-amber-500 dark:shadow-amber-500/50'
                                 : 'bg-blue-500 dark:shadow-blue-500/50'
                             }`}
                           ></div>
@@ -167,7 +167,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                     <div className="text-xs text-slate-500 dark:text-slate-400 text-center py-4">No new notifications.</div>
                   )}
                 </div>
-                <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 text-center bg-slate-50 dark:bg-slate-900/20 rounded-b-xl">
+                <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 text-center bg-slate-50 dark:bg-slate-800/20 rounded-b-xl">
                   <button className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">View all notifications</button>
                 </div>
               </div>
@@ -182,18 +182,18 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                 setShowNotifications(false)
                 setShowUserMenu(false)
               }}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors group"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
             >
               <Settings className="w-5 h-5 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
             </button>
 
             {showSettings && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
                   <h3 className="font-semibold text-slate-900 dark:text-white">Settings</h3>
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
+                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                   >
                     <X className="w-4 h-4 text-slate-400 hover:text-slate-900 dark:hover:text-white" />
                   </button>
@@ -208,7 +208,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                         className={`rounded-lg border px-3 py-2 text-sm transition-all ${
                           spendDisplayMode === 'credits'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-600/20 text-blue-700 dark:text-blue-300 dark:shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                            : 'border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                            : 'border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         Credits
@@ -219,7 +219,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                         className={`rounded-lg border px-3 py-2 text-sm transition-all ${
                           spendDisplayMode === 'usd'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-600/20 text-blue-700 dark:text-blue-300 dark:shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                            : 'border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                            : 'border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         USD
@@ -234,9 +234,9 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                         value={usdRateDraft}
                         onChange={(e) => setUsdRateDraft(e.target.value)}
                         onBlur={() => setUsdPerCredit(Number(usdRateDraft))}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500/70 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-500/70 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                       />
-                      <p className="mt-1 text-[11px] text-slate-500">
+                      <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                         Current conversion used when USD mode is selected.
                       </p>
                     </div>
@@ -244,11 +244,11 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
 
                   <div>
                     <label className="flex items-center gap-3 mb-2 cursor-pointer group">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 focus:ring-blue-500/50 dark:focus:ring-offset-slate-800" />
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-blue-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-900" />
                       <span className="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">Enable Notifications</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-500 focus:ring-blue-500/50 dark:focus:ring-offset-slate-800" />
+                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-blue-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-900" />
                       <span className="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">Email Alerts</span>
                     </label>
                   </div>
@@ -258,11 +258,11 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                   <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mb-2">Updates</p>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <input type="radio" name="updates" defaultChecked className="w-4 h-4 text-blue-600 dark:text-blue-500 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-800" />
+                      <input type="radio" name="updates" defaultChecked className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-900" />
                       <span className="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">Auto-update</span>
                     </label>
                     <label className="flex items-center gap-3 mt-2 cursor-pointer group">
-                      <input type="radio" name="updates" className="w-4 h-4 text-blue-600 dark:text-blue-500 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-800" />
+                      <input type="radio" name="updates" className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 focus:ring-blue-500/50 dark:focus:ring-offset-slate-900" />
                       <span className="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">Manual update</span>
                     </label>
                   </div>
@@ -270,9 +270,9 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                   <hr className="border-slate-200 dark:border-slate-700/50" />
                   
                   <div className="space-y-1">
-                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors">System Settings</a>
-                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors">API Configuration</a>
-                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors">Help & Docs</a>
+                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">System Settings</a>
+                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">API Configuration</a>
+                    <a href="#" className="block px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Help & Docs</a>
                   </div>
                 </div>
               </div>
@@ -287,7 +287,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
                 setShowNotifications(false)
                 setShowSettings(false)
               }}
-              className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors group"
+              className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md dark:shadow-lg dark:shadow-blue-500/20 border border-blue-400/20 group-hover:scale-105 transition-transform">
                 <User className="w-4 h-4 text-white" />
@@ -296,13 +296,13 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700/50 mb-1">
                   <p className="text-sm font-medium text-slate-900 dark:text-white">Admin User</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">admin@lighthouse.dev</p>
                 </div>
-                <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors">Profile</a>
-                <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors">Preferences</a>
+                <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Profile</a>
+                <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Preferences</a>
                 <hr className="my-1 border-slate-200 dark:border-slate-700/50" />
                 <a href="#" className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors">Logout</a>
               </div>
@@ -327,11 +327,11 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
       <Command.Dialog 
         open={cmdkOpen} 
         onOpenChange={setCmdkOpen}
-        className="fixed inset-0 z-[100] flex pt-[15vh] justify-center bg-slate-900/40 dark:bg-slate-900/80 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex pt-[15vh] justify-center bg-slate-900/20 dark:bg-black/60 backdrop-blur-sm transition-colors duration-300"
       >
-        <div className="w-full max-w-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl overflow-hidden flex flex-col h-max max-h-[60vh] animate-in fade-in zoom-in-95">
+        <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col h-max max-h-[60vh] animate-in fade-in zoom-in-95">
          <DialogTitle className="sr-only">Command Palette</DialogTitle>
-          <DialogDescription className="sr-only">Search the dashboard.</DialogDescription>
+         <DialogDescription className="sr-only">Search the dashboard.</DialogDescription>
          
           <Command.Input 
             placeholder="Search dashboards, queries, warehouses..." 
@@ -341,20 +341,20 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
             <Command.Empty className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">No results found.</Command.Empty>
 
             <Command.Group heading="Dashboards & Monitoring" className="px-2 py-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <Command.Item onSelect={() => runCommand(() => router.push('/'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Dashboard Overview</Command.Item>
-              <Command.Item onSelect={() => runCommand(() => router.push('/queries'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Active Queries</Command.Item>
-              <Command.Item onSelect={() => runCommand(() => router.push('/warehouses'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Warehouse Credits</Command.Item>
-              <Command.Item onSelect={() => runCommand(() => router.push('/storage'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Storage Analysis</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Dashboard Overview</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/queries'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Active Queries</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/warehouses'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Warehouse Credits</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/storage'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Storage Analysis</Command.Item>
             </Command.Group>
 
             <Command.Group heading="Optimization & Security" className="px-2 py-1 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <Command.Item onSelect={() => runCommand(() => router.push('/performance'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Performance Metrics</Command.Item>
-              <Command.Item onSelect={() => runCommand(() => router.push('/recommendations'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Cortex AI Recommendations</Command.Item>
-              <Command.Item onSelect={() => runCommand(() => router.push('/identity'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Identity & Access Risk</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/performance'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Performance Metrics</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/recommendations'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Cortex AI Recommendations</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => router.push('/identity'))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Identity & Access Risk</Command.Item>
             </Command.Group>
             
             <Command.Group heading="Settings" className="px-2 py-1 mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <Command.Item onSelect={() => runCommand(() => setShowSettings(true))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-600 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-600 aria-selected:text-blue-700 dark:aria-selected:text-white">Toggle Spend Display (USD/Credits)</Command.Item>
+              <Command.Item onSelect={() => runCommand(() => setShowSettings(true))} className="px-2 py-2 text-sm text-slate-700 dark:text-slate-200 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-blue-900/40 aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/40 aria-selected:text-blue-700 dark:aria-selected:text-blue-300">Toggle Spend Display (USD/Credits)</Command.Item>
             </Command.Group>
           </Command.List>
         </div>

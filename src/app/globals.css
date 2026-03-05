@@ -4,75 +4,93 @@
 
 @layer base {
   :root {
-    /* Primary base colors (RGB format for Tailwind compatibility) */
-    --primary: 29 78 216;
-    --primary-dark: 30 58 138;
-    --primary-light: 59 130 246;
+    /* LIGHT MODE */
+    --background: 248 250 252;      /* slate-50 */
+    --surface: 255 255 255;         /* white */
     
-    --background: 15 23 42;
-    --surface: 30 41 59;
-    --surface-light: 51 65 85;
+    --text-primary: 15 23 42;       /* slate-900 */
+    --text-secondary: 71 85 105;    /* slate-600 */
+    --text-muted: 148 163 184;      /* slate-400 */
     
-    --text-primary: 248 250 252;
-    --text-secondary: 203 213 225;
-    --text-muted: 148 163 184;
-    
-    --border: 71 85 105;
-    --border-light: 100 116 139;
+    --border: 226 232 240;          /* slate-200 */
 
-    /* Glassmorphism System Variables */
-    --glass-bg: rgba(30, 41, 59, 0.45);        /* Semi-transparent surface */
-    --glass-bg-hover: rgba(30, 41, 59, 0.65);  /* Darker on hover */
-    --glass-border: rgba(255, 255, 255, 0.08); /* Subtle white border */
-    --glass-highlight: rgba(255, 255, 255, 0.03); /* Header/Highlight areas */
-    --glass-blur: 16px;                        /* Frost effect strength */
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    /* Light Mode Glassmorphism (Frosted White) */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(15, 23, 42, 0.08);
+    --glass-blur: 12px;
+    --glass-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    /* DARK MODE */
+    --background: 10 14 26;         /* Your specific #0a0e1a */
+    --surface: 15 23 42;            /* slate-900 */
+    
+    --text-primary: 248 250 252;    /* slate-50 */
+    --text-secondary: 203 213 225;  /* slate-300 */
+    --text-muted: 100 116 139;      /* slate-500 */
+    
+    --border: 30 41 59;             /* slate-800 */
+
+    /* Dark Mode Glassmorphism (Frosted Slate) */
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: 16px;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--text-primary));
   }
 }
 
 @layer components {
   /* Richer gradient background to make the glass effect pop */
-  .app-container {
-    @apply min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-200;
-  }
+.app-container {
+  @apply min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-slate-900 dark:text-slate-200;
+}
 
   /* Core Glass Utility */
-  .glass {
-    background-color: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-  }
+.glass {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
 
   /* KPI Cards - Modernized */
-  .kpi-card {
-    @apply glass text-white rounded-xl p-5 transition-all duration-300 hover:-translate-y-1;
-  }
+.kpi-card {
+  @apply glass rounded-xl p-5 transition-all duration-300 hover:-translate-y-1;
+}
   
   .kpi-card:hover {
     background-color: var(--glass-bg-hover);
     border-color: rgba(255, 255, 255, 0.15);
   }
 
-  .kpi-label {
-    @apply text-sm font-medium uppercase tracking-wider text-slate-300;
-  }
-
-  .kpi-value {
-    @apply text-3xl font-bold mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400;
-  }
+.kpi-label {
+  @apply text-sm font-medium uppercase tracking-wider text-slate-500 dark:text-slate-300;
+}
+.kpi-value {
+  @apply text-3xl font-bold mt-2 text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:to-slate-400;
+}
 
   /* Standard Cards/Panels */
   .card {
-    @apply glass rounded-xl overflow-hidden transition-all duration-300;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    @apply rounded-xl overflow-hidden min-w-0 w-full transition-all duration-300;
   }
 
-  .card-header {
-    @apply px-6 py-4 border-b;
-    border-color: var(--glass-border);
-    background-color: var(--glass-highlight);
-  }
+ .card-header {
+  @apply px-6 py-4 border-b border-[rgb(var(--border))];
+  background-color: rgba(var(--surface), 0.5);
+}
 
   .card-body {
     @apply p-6;
@@ -83,14 +101,13 @@
     @apply px-4 py-2 bg-blue-600/80 text-white rounded-lg font-medium backdrop-blur-sm border border-blue-400/30 hover:bg-blue-500/90 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all;
   }
 
-  .btn-secondary {
-    @apply px-4 py-2 bg-slate-700/50 text-white rounded-lg font-medium backdrop-blur-sm border border-slate-500/30 hover:bg-slate-600/60 transition-all;
-  }
+.btn-secondary {
+  @apply px-4 py-2 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-white rounded-lg font-medium backdrop-blur-sm border border-slate-300 dark:border-slate-500/30 hover:bg-slate-200 dark:hover:bg-slate-600/60 transition-all;
+}
 
-  .input-field {
-    @apply w-full px-4 py-2 bg-slate-900/50 text-white rounded-lg border border-slate-600/50 backdrop-blur-sm focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all;
-  }
-
+.input-field {
+  @apply w-full px-4 py-2 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white rounded-lg border border-slate-300 dark:border-slate-600/50 focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all;
+}
   /* Badges */
   .badge {
     @apply inline-block px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border;
@@ -121,17 +138,17 @@
     @apply overflow-x-auto rounded-xl border border-white/5;
   }
 
-  .table {
-    @apply w-full text-sm text-left text-slate-300;
-  }
+.table {
+  @apply w-full text-sm text-left text-slate-700 dark:text-slate-300;
+}
 
-  .table-header {
-    @apply bg-slate-800/60 backdrop-blur-md text-slate-200 font-semibold text-sm uppercase border-b border-white/10;
-  }
+.table-header {
+  @apply bg-slate-100 dark:bg-slate-800/60 backdrop-blur-md text-slate-700 dark:text-slate-200 font-semibold text-sm uppercase border-b border-slate-200 dark:border-white/10;
+}
 
-  .table-row {
-    @apply border-b border-white/5 hover:bg-white/5 transition-colors;
-  }
+.table-row {
+  @apply border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors;
+}
 
   .table-cell {
     @apply px-6 py-4;

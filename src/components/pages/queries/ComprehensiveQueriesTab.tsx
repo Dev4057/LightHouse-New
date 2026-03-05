@@ -30,13 +30,19 @@ const glassTooltipStyle = {
 // REUSABLE COMPONENTS
 // ==========================================
 
-const EmptyState = ({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) => (
+type EmptyStateProps = {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  desc: string
+}
+
+const EmptyState = ({ icon: Icon, title, desc }: EmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 text-center w-full">
-    <div className="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center mb-3 border border-slate-700/50">
-      <Icon className="w-5 h-5 text-slate-500" />
+    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-3 border border-slate-200 dark:border-slate-700/50">
+      <Icon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
     </div>
-    <h4 className="text-sm font-semibold text-slate-200">{title}</h4>
-    <p className="text-xs text-slate-400 mt-1 max-w-xs">{desc}</p>
+    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h4>
+    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs">{desc}</p>
   </div>
 )
 
@@ -121,8 +127,8 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
 
   // overflow-hidden on every card is the key containment fix —
   // no child (chart, table) can bleed outside and widen the page.
-const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-xl overflow-hidden min-w-0 w-full flex flex-col";
-  const thClass = "py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
+const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden min-w-0 w-full flex flex-col"
+const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
   const tdClass = "py-3 px-4 text-xs"
 
   return (
@@ -282,7 +288,8 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
               <TableScroll maxHeight="500px">
                 {/* min-w triggers horizontal scroll on narrow viewports instead of squashing columns */}
                 <table className="min-w-[640px] w-full text-sm text-left">
-                  <thead className="bg-slate-950/80 sticky top-0 z-10 border-b border-slate-800">
+                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800"
+>
                     <tr>
                       <th className={`${thClass} w-10 text-center`}>#</th>
                       <th className={thClass}>Query</th>
@@ -299,7 +306,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
                       const currentCost = Number(q.CREDITS_ATTRIBUTED_COMPUTE || 0)
                       const costPct = Math.min(100, Math.max(2, (currentCost / maxExpensiveCost) * 100))
                       return (
-                        <tr key={(q as any).QUERY_ID || i} className="even:bg-slate-900/40 hover:bg-slate-800/60 transition-colors group border-b border-slate-800/50 last:border-0">
+                        <tr key={(q as any).QUERY_ID || i} className="even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors...">
                           <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                           <td className={`${tdClass} max-w-[200px]`}>
                             <div className="flex flex-col gap-1">
@@ -341,7 +348,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
             ) : (
               <EmptyState icon={FileQuestion} title="No Expensive Queries" desc="No queries found with significant compute cost." />
             )}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/40">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
               <WidgetAIInsight title="Most Expensive Queries" widgetType="cost_analysis" dateRange={dateRange} widgetId="expensive_queries" widgetKind="table" templateKey="expensive_queries" dataSample={expensiveData?.slice(0, 20) ?? []} />
             </div>
           </CardContent>
@@ -364,7 +371,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
               {spillData && spillData.length > 0 ? (
                 <TableScroll>
                   <table className="min-w-[360px] w-full text-sm text-left">
-                    <thead className="bg-slate-950/80 sticky top-0 z-10 border-b border-slate-800">
+                    <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className={`${thClass} w-10 text-center`}>#</th>
                         <th className={thClass}>Query</th>
@@ -374,7 +381,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
                     </thead>
                     <tbody>
                       {spillData.map((q, i) => (
-                        <tr key={i} className="even:bg-slate-900/40 hover:bg-slate-800/60 border-b border-slate-800/50 last:border-0 group transition-colors">
+                        <tr key={i} className="even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors...">
                           <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                           <td className={`${tdClass} max-w-[160px]`}>
                             <div className="flex items-center gap-2">
@@ -398,7 +405,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
               ) : (
                 <EmptyState icon={Database} title="System Healthy" desc="No local or remote spills detected." />
               )}
-              <div className="p-4 border-t border-slate-800 bg-slate-900/40">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
                 <WidgetAIInsight title="Under-Resourced Queries (Disk Spill)" widgetType="query_performance" dateRange={dateRange} widgetId="spill_queries" widgetKind="table" templateKey="spill_queries" dataSample={spillData?.slice(0, 20) ?? []} />
               </div>
             </CardContent>
@@ -418,7 +425,8 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
               {pruneData && pruneData.length > 0 ? (
                 <TableScroll>
                   <table className="min-w-[360px] w-full text-sm text-left">
-                    <thead className="bg-slate-950/80 sticky top-0 z-10 border-b border-slate-800">
+                    <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800"
+>
                       <tr>
                         <th className={`${thClass} w-10 text-center`}>#</th>
                         <th className={thClass}>Query</th>
@@ -431,7 +439,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
                         const ratio = Math.max(0, Math.min(100, Number(q.PRUNING_RATIO || 0) > 1 ? Number(q.PRUNING_RATIO || 0) : Number(q.PRUNING_RATIO || 0) * 100))
                         const ratioColor = ratio < 20 ? 'border-red-500/40 bg-red-500/10' : ratio < 50 ? 'border-amber-500/40 bg-amber-500/10' : 'border-emerald-500/40 bg-emerald-500/10'
                         return (
-                          <tr key={i} className="even:bg-slate-900/40 hover:bg-slate-800/60 border-b border-slate-800/50 last:border-0 group transition-colors">
+                          <tr key={i} className="even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors...">
                             <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                             <td className={`${tdClass} max-w-[160px]`}>
                               <div className="flex items-center gap-2">
@@ -456,7 +464,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
               ) : (
                 <EmptyState icon={Activity} title="Optimum Performance" desc="All queries scanning data correctly." />
               )}
-              <div className="p-4 border-t border-slate-800 bg-slate-900/40">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
                 <WidgetAIInsight title="Inefficient Queries (Poor Partition Pruning)" widgetType="query_performance" dateRange={dateRange} widgetId="prune_queries" widgetKind="table" templateKey="prune_queries" dataSample={pruneData?.slice(0, 20) ?? []} />
               </div>
             </CardContent>
@@ -477,7 +485,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
             {highFreqData && highFreqData.length > 0 ? (
               <TableScroll maxHeight="400px">
                 <table className="min-w-[560px] w-full text-sm text-left">
-                  <thead className="bg-slate-950/80 sticky top-0 z-10 border-b border-slate-800">
+                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className={`${thClass} w-10 text-center`}>#</th>
                       <th className={thClass}>Query Pattern</th>
@@ -489,7 +497,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
                   </thead>
                   <tbody>
                     {highFreqData.map((q, i) => (
-                      <tr key={i} className="even:bg-slate-900/40 hover:bg-slate-800/60 transition-colors group border-b border-slate-800/50 last:border-0">
+                      <tr key={i} className="even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors...">
                         <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                         <td className={`${tdClass} max-w-[180px]`}>
                           <div className="flex items-center gap-2">
@@ -515,7 +523,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
             ) : (
               <EmptyState icon={Activity} title="No Repeating Queries" desc="No high-frequency repeating query patterns detected." />
             )}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/40">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
               <WidgetAIInsight title="High Frequency Queries" widgetType="query_performance" dateRange={dateRange} widgetId="high_frequency_queries" widgetKind="table" templateKey="high_frequency_queries" dataSample={highFreqData?.slice(0, 30) ?? []} />
             </div>
           </CardContent>
@@ -535,7 +543,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
             {longestData && longestData.length > 0 ? (
               <TableScroll maxHeight="500px">
                 <table className="min-w-[640px] w-full text-sm text-left">
-                  <thead className="bg-slate-950/80 sticky top-0 z-10 border-b border-slate-800">
+                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className={`${thClass} w-10 text-center`}>#</th>
                       <th className={thClass}>Query Details</th>
@@ -548,7 +556,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
                   </thead>
                   <tbody>
                     {longestData.map((q, i) => (
-                      <tr key={q.QUERY_ID || i} className="even:bg-slate-900/40 hover:bg-slate-800/60 transition-colors group border-b border-slate-800/50 last:border-0">
+                      <tr key={q.QUERY_ID || i} className="even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors...">
                         <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                         <td className={`${tdClass} max-w-[200px]`}>
                           <div className="flex flex-col gap-1">
@@ -589,7 +597,7 @@ const cardClass = "bg-slate-900/40 backdrop-blur-xl border-slate-700/50 shadow-x
             ) : (
               <EmptyState icon={Clock} title="No Slow Queries" desc="No significantly long-running queries detected." />
             )}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/40">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
               <WidgetAIInsight title="Longest Running Queries" widgetType="query_performance" dateRange={dateRange} widgetId="longest_queries" widgetKind="table" templateKey="longest_queries" dataSample={longestData?.slice(0, 20) ?? []} />
             </div>
           </CardContent>
