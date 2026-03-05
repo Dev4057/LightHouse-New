@@ -32,14 +32,16 @@ export default function KPICard({ label, value, change, icon }: KPICardProps) {
             {isPositive && <TrendingUp className="w-4 h-4 text-yellow-400" />}
             {isNegative && <TrendingDown className="w-4 h-4 text-green-400" />}
             {isStable && <Activity className="w-4 h-4 text-blue-400" />}
-            <span className={`text-xs font-semibold ${isNegative ? 'text-green-200' : 'text-yellow-200'}`}>
+<span className={`text-xs font-semibold ${
+  isNegative ? 'text-green-600 dark:text-green-200' : 'text-amber-600 dark:text-amber-200'
+}`}>
               {change}
             </span>
           </div>
         </div>
-        <div className="p-3 bg-white bg-opacity-10 rounded-lg">
-          <Icon className="w-6 h-6" />
-        </div>
+<div className="p-3 bg-slate-900/10 dark:bg-white/10 rounded-lg">
+  <Icon className="w-6 h-6 text-slate-700 dark:text-white" />
+</div>
       </div>
     </div>
   )
