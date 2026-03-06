@@ -114,20 +114,21 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
 
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
 
-            <XAxis
+<XAxis
               dataKey="QUERY_DAY"
               stroke={axisStroke}
               axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
               tickLine={false}
-              tick={{ fill: tickFill, fontSize: 11 }}
               dy={10}
+              // ✨ FIX: Change from tickFill to explicit white/black
+              tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
             />
             <YAxis
               yAxisId="left"
               stroke="#3b82f6"
               axisLine={{ stroke: '#3b82f6', strokeWidth: 1.5, strokeOpacity: 0.5 }}
               tickLine={false}
-              tick={{ fill: tickFill, fontSize: 11 }}
+              tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
               width={60}
             />
             <YAxis
@@ -136,7 +137,7 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
               stroke="#2dd4bf"
               axisLine={{ stroke: '#2dd4bf', strokeWidth: 1.5, strokeOpacity: 0.5 }}
               tickLine={false}
-              tick={{ fill: tickFill, fontSize: 11 }}
+              tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
               width={60}
             />
 
@@ -212,7 +213,7 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
           </div>
         </div>
 
-        {/* 3. Credits by Service Type */}
+{/* 3. Credits by Service Type */}
         <div className={chartCardClass}>
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-4">
             {creditUnitLabel} by Service Type
@@ -220,49 +221,65 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
 
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
+              // ✨ FIX 1: Set layout to vertical
+              layout="vertical" 
               data={(serviceCredits || []).slice(0, 10).map((row) => ({
                 ...row,
                 TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS),
               }))}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
             >
               <defs>
-                <linearGradient id="colorServiceBar" x1="0" y1="0" x2="0" y2="1">
+                {/* ✨ FIX 2: Adjusted gradient to flow left-to-right instead of top-to-bottom */}
+                <linearGradient id="colorServiceBarHorizontal" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="5%"  stopColor="#10b981" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+              {/* ✨ FIX 3: Only show vertical grid lines */}
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} vertical={true} />
 
+              {/* ✨ FIX 4: XAxis is now the numbers (credits/USD) */}
               <XAxis
+                type="number"
+                stroke={axisStroke}
+                axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
+                tickLine={false}
+                tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
+              />
+
+              {/* ✨ FIX 5: YAxis is now the Service Types, with plenty of room (width={150}) */}
+            <YAxis
+                type="category"
                 dataKey="SERVICE_TYPE"
                 stroke={axisStroke}
                 axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                tickLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                height={50}
-                dy={10}
-                tick={{ fill: tickFill, fontSize: 11 }}
-                tickFormatter={(value) =>
-                  typeof value === 'string' && value.length > 10
-                    ? `${value.substring(0, 10)}...`
-                    : value
-                }
-              />
-              <YAxis
-                stroke={axisStroke}
-                axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                tickLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                tick={{ fill: tickFill, fontSize: 11 }}
+                tickLine={false}
+                width={150}
+                // ✨ FIX: Change the 'fill' to pure white in dark mode and pure black in light mode
+                tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
+                tickFormatter={(value) => {
+                  const cleanText = typeof value === 'string' ? value.replace(/_/g, ' ') : value;
+                  return cleanText.length > 22 ? `${cleanText.substring(0, 20)}...` : cleanText;
+                }}
               />
 
               <Tooltip
                 contentStyle={glassTooltipStyle}
+                itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
                 cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
                 formatter={(value) => formatCreditValue(Number(value))}
               />
 
-              <Bar dataKey="TOTAL_SPEND_DISPLAY" fill="url(#colorServiceBar)" radius={[4,4,0,0]} name={`${creditUnitLabel} Used`} />
+              {/* ✨ FIX 6: Adjust the radius to round the right-side corners instead of the top ones */}
+              <Bar 
+                dataKey="TOTAL_SPEND_DISPLAY" 
+                fill="url(#colorServiceBarHorizontal)" 
+                radius={[0,4,4,0]} 
+                name={`${creditUnitLabel} Used`} 
+                barSize={24} 
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

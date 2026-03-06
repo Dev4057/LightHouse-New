@@ -400,7 +400,7 @@ if (isLoading || !mounted) {
                 Overprovisioned Warehouses
               </CardTitle>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-                Low utilization with no queueing — downsize opportunity
+                Low utilization with no queueing downsize opportunity
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 min-w-0">
@@ -445,7 +445,7 @@ if (isLoading || !mounted) {
                 Underprovisioned Warehouses
               </CardTitle>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-                High utilization with queueing — upsize opportunity
+                High utilization with queueing upsize opportunity
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 min-w-0">
