@@ -259,10 +259,10 @@ export default function AIInsightsPanel({
 
   if (loading) {
     return (
-      <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-        <div className="flex items-center gap-2 text-slate-400">
-          <div className="w-4 h-4 bg-slate-700 rounded-full animate-pulse" />
-          <span className="text-sm">Generating insights...</span>
+      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700/50 p-4 transition-colors">
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+          <div className="w-4 h-4 bg-slate-300 dark:bg-slate-600 rounded-full animate-pulse" />
+          <span className="text-sm font-medium">Generating insights...</span>
         </div>
       </div>
     )
@@ -270,9 +270,9 @@ export default function AIInsightsPanel({
 
   if (error || !insight) {
     return (
-      <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-        <div className="flex items-center gap-2 text-slate-400 text-sm">
-          <AlertCircle className="w-4 h-4" />
+      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700/50 p-4 transition-colors">
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+          <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
           {error || 'No insights available'}
         </div>
       </div>
@@ -280,21 +280,21 @@ export default function AIInsightsPanel({
   }
 
   const signalIcon = {
-    high: <AlertCircle className="w-4 h-4 text-red-400" />,
-    medium: <TrendingUp className="w-4 h-4 text-yellow-400" />,
-    low: <Zap className="w-4 h-4 text-blue-400" />,
+    high: <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400" />,
+    medium: <TrendingUp className="w-4 h-4 text-amber-500 dark:text-yellow-400" />,
+    low: <Zap className="w-4 h-4 text-blue-500 dark:text-blue-400" />,
   }
 
   const signalColor = {
-    high: 'text-red-400',
-    medium: 'text-yellow-400',
-    low: 'text-blue-400',
+    high: 'text-red-700 bg-red-100 dark:bg-transparent dark:text-red-400',
+    medium: 'text-amber-700 bg-amber-100 dark:bg-transparent dark:text-yellow-400',
+    low: 'text-blue-700 bg-blue-100 dark:bg-transparent dark:text-blue-400',
   }
 
-  const decisionBg = {
-    action_required: 'bg-red-900/20 border-red-700/30',
-    monitor: 'bg-yellow-900/20 border-yellow-700/30',
-    no_material_insight: 'bg-slate-700/20 border-slate-600/30',
+  const decisionStyle = {
+    action_required: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700/30 text-red-800 dark:text-red-200',
+    monitor: 'bg-amber-50 dark:bg-yellow-900/20 border-amber-200 dark:border-yellow-700/30 text-amber-800 dark:text-yellow-200',
+    no_material_insight: 'bg-slate-100 dark:bg-slate-700/20 border-slate-200 dark:border-slate-600/30 text-slate-700 dark:text-slate-200',
   }
 
   const decisionText = {
@@ -313,55 +313,53 @@ export default function AIInsightsPanel({
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
+      <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h3 className="font-semibold text-white mb-1">AI Insights</h3>
-            <p className="text-sm text-slate-400">{insight.summary}</p>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-1.5">AI Insights</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{insight.summary}</p>
           </div>
-          <div className={`flex items-center gap-1 px-2 py-1 rounded ${signalColor[insight.signal]}`}>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-transparent dark:border-current/10 ${signalColor[insight.signal]}`}>
             {signalIcon[insight.signal]}
-            <span className="text-xs font-medium capitalize">{insight.signal} Priority</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{insight.signal} Priority</span>
           </div>
         </div>
 
         {/* Decision */}
-        <div className={`rounded border p-3 mt-3 ${decisionBg[insight.decision]}`}>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium text-slate-200">
-              {decisionText[insight.decision]}
-            </span>
-          </div>
+        <div className={`rounded-lg border p-3.5 mt-4 flex items-center gap-2.5 shadow-sm ${decisionStyle[insight.decision]}`}>
+          <CheckCircle className="w-4.5 h-4.5" />
+          <span className="text-sm font-bold tracking-wide uppercase">
+            {decisionText[insight.decision]}
+          </span>
         </div>
       </div>
 
       {/* Findings */}
       {insight.findings && insight.findings.length > 0 && (
-        <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-          <h4 className="font-semibold text-white mb-3 text-sm">Findings</h4>
+        <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+          <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Findings</h4>
           <div className="space-y-3">
             {insight.findings.map((finding, idx) => (
-              <div key={idx} className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <p className="font-medium text-white text-sm">{finding.title}</p>
-                  <div className="flex gap-2 text-xs">
-                    <span className={`px-2 py-1 rounded ${
-                      finding.impact === 'high' ? 'bg-red-900/30 text-red-300' :
-                      finding.impact === 'medium' ? 'bg-yellow-900/30 text-yellow-300' :
-                      'bg-blue-900/30 text-blue-300'
+              <div key={idx} className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <div className="flex items-start justify-between gap-3 mb-2.5">
+                  <p className="font-semibold text-slate-900 dark:text-white text-sm">{finding.title}</p>
+                  <div className="flex gap-2 text-[11px] font-bold uppercase tracking-wider">
+                    <span className={`px-2 py-0.5 rounded border ${
+                      finding.impact === 'high' ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800/50 dark:text-red-300' :
+                      finding.impact === 'medium' ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-yellow-900/30 dark:border-yellow-800/50 dark:text-yellow-300' :
+                      'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800/50 dark:text-blue-300'
                     }`}>
                       {finding.impact} impact
                     </span>
-                    <span className="px-2 py-1 rounded bg-slate-700 text-slate-200">
+                    <span className="px-2 py-0.5 rounded border bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300">
                       {finding.confidence} confidence
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-300 mb-2">
-                  <strong>Pattern:</strong> {finding.pattern}
+                <p className="text-xs text-slate-700 dark:text-slate-300 mb-2 leading-relaxed">
+                  <strong className="text-slate-900 dark:text-white">Pattern:</strong> {finding.pattern}
                 </p>
-                <p className="text-xs text-slate-400">{finding.evidence}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{finding.evidence}</p>
               </div>
             ))}
           </div>
@@ -370,30 +368,30 @@ export default function AIInsightsPanel({
 
       {/* Recommendations */}
       {insight.recommendations && insight.recommendations.length > 0 && (
-        <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-          <h4 className="font-semibold text-white mb-3 text-sm">Recommendations</h4>
+        <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+          <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Recommendations</h4>
           <div className="space-y-3">
             {insight.recommendations.map((rec, idx) => (
-              <div key={idx} className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <p className="font-medium text-white text-sm">{rec.action}</p>
-                  <div className="flex gap-2 text-xs">
-                    <span className={`px-2 py-1 rounded ${
-                      rec.priority === 'P1' ? 'bg-red-900/30 text-red-300' :
-                      rec.priority === 'P2' ? 'bg-yellow-900/30 text-yellow-300' :
-                      'bg-blue-900/30 text-blue-300'
+              <div key={idx} className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <div className="flex items-start justify-between gap-3 mb-2.5">
+                  <p className="font-semibold text-slate-900 dark:text-white text-sm">{rec.action}</p>
+                  <div className="flex gap-2 text-[11px] font-bold uppercase tracking-wider">
+                    <span className={`px-2 py-0.5 rounded border ${
+                      rec.priority === 'P1' ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800/50 dark:text-red-300' :
+                      rec.priority === 'P2' ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-yellow-900/30 dark:border-yellow-800/50 dark:text-yellow-300' :
+                      'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800/50 dark:text-blue-300'
                     }`}>
                       {rec.priority}
                     </span>
-                    <span className="px-2 py-1 rounded bg-slate-700 text-slate-200">
+                    <span className="px-2 py-0.5 rounded border bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300">
                       {rec.confidence} confidence
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400">{rec.why}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{rec.why}</p>
                 {rec.whenNotToApply && (
-                  <p className="text-xs text-slate-500 mt-2">
-                    <strong>Exception:</strong> {rec.whenNotToApply}
+                  <p className="text-xs text-slate-500 dark:text-slate-500 mt-2 p-2 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700/50">
+                    <strong className="text-slate-700 dark:text-slate-300">Exception:</strong> {rec.whenNotToApply}
                   </p>
                 )}
               </div>
@@ -404,13 +402,13 @@ export default function AIInsightsPanel({
 
       {/* Suggested SQL */}
       {insight.suggestedSQL && insight.suggestedSQL.length > 0 && (
-        <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-          <h4 className="font-semibold text-white mb-3 text-sm">Validation Queries</h4>
+        <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+          <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Validation Queries</h4>
           <div className="space-y-3">
             {insight.suggestedSQL.map((sql, idx) => (
-              <div key={idx} className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <p className="text-xs font-medium text-white mb-2">{sql.goal}</p>
-                <pre className="text-xs bg-black/50 p-2 rounded overflow-auto text-slate-300">
+              <div key={idx} className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <p className="text-xs font-semibold text-slate-800 dark:text-white mb-2">{sql.goal}</p>
+                <pre className="text-xs bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 shadow-inner">
                   {sql.sql}
                 </pre>
               </div>
@@ -420,11 +418,11 @@ export default function AIInsightsPanel({
       )}
 
       {rowHasOptimizableQuery && (
-        <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+          <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h4 className="font-semibold text-white text-sm">Query Optimization Lab</h4>
-              <p className="text-xs text-slate-400">
+              <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider">Query Optimization Lab</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 EXPLAIN original query, Cortex rewrite suggestion, EXPLAIN rewritten query, and reduced-sample validation.
               </p>
             </div>
@@ -432,69 +430,69 @@ export default function AIInsightsPanel({
               type="button"
               onClick={runQueryOptimization}
               disabled={optLoading}
-              className="inline-flex items-center rounded-md border border-cyan-700/50 bg-cyan-950/30 px-3 py-1.5 text-xs font-medium text-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-cyan-900/40"
+              className="inline-flex items-center rounded-lg border border-blue-300 dark:border-cyan-700/50 bg-blue-50 dark:bg-cyan-950/30 px-3.5 py-2 text-xs font-bold tracking-wide uppercase text-blue-700 dark:text-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-100 dark:hover:bg-cyan-900/40 transition-colors shadow-sm"
             >
               {optLoading ? 'Running...' : 'Run Explain + Rewrite'}
             </button>
           </div>
 
-          <details className="mb-3 border border-slate-700 rounded p-2 bg-slate-900/40">
-            <summary className="cursor-pointer text-xs text-slate-300">Selected Query Text</summary>
-            <pre className="mt-2 text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-48">
+          <details className="mb-4 border border-slate-200 dark:border-slate-700/60 rounded-lg p-3 bg-white dark:bg-slate-900/40 shadow-sm transition-colors">
+            <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none">Selected Query Text</summary>
+            <pre className="mt-3 text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-48 shadow-inner">
               {selectedQueryText}
             </pre>
           </details>
 
           {optError && (
-            <div className="text-xs text-red-300 border border-red-900/40 bg-red-950/20 rounded-md px-2 py-1.5 mb-3">
+            <div className="text-xs text-red-700 dark:text-red-300 border border-red-300 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 rounded-lg px-3 py-2.5 mb-4 shadow-sm">
               {optError}
             </div>
           )}
 
           {optLoading && (
-            <div className="mb-3 border border-cyan-900/40 rounded-lg p-3 bg-cyan-950/10">
+            <div className="mb-4 border border-blue-200 dark:border-cyan-900/40 rounded-lg p-4 bg-blue-50 dark:bg-cyan-950/10 shadow-sm transition-colors">
               <div className="flex items-center justify-between gap-3 mb-2">
-                <p className="text-xs font-medium text-cyan-200">Agentic Flow In Progress</p>
-                <span className="text-[11px] text-cyan-300/80">{elapsedSec}s elapsed</span>
+                <p className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-cyan-200">Agentic Flow In Progress</p>
+                <span className="text-[11px] font-semibold text-blue-600/80 dark:text-cyan-300/80">{elapsedSec}s elapsed</span>
               </div>
-              <p className="text-[11px] text-slate-400 mb-3">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
                 Streaming actual backend stages from the query optimizer route.
               </p>
               {optLiveStages.length === 0 ? (
-                <div className="text-xs text-slate-400 flex items-center gap-2">
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-cyan-600 bg-cyan-900/30 text-cyan-200 animate-pulse">
+                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-blue-400 dark:border-cyan-600 bg-blue-100 dark:bg-cyan-900/30 text-blue-700 dark:text-cyan-200 animate-pulse">
                     …
                   </span>
                   Waiting for first backend stage event...
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {optLiveStages.map((stage, idx) => {
                     const isLast = idx === optLiveStages.length - 1
                     const isFailed = stage.status === 'failed'
                     const isDone = stage.status === 'completed'
                     const isSkipped = stage.status === 'skipped'
                     return (
-                      <div key={`${stage.key}-${idx}`} className="flex items-start gap-2 text-xs">
+                      <div key={`${stage.key}-${idx}`} className="flex items-start gap-2.5 text-xs">
                         <span
-                          className={`inline-flex mt-0.5 h-4 min-w-4 items-center justify-center rounded-full border ${
+                          className={`inline-flex mt-0.5 h-5 min-w-5 items-center justify-center rounded-full border shadow-sm ${
                             isDone
-                              ? 'border-emerald-600 bg-emerald-900/30 text-emerald-300'
+                              ? 'border-emerald-300 bg-emerald-50 text-emerald-600 dark:border-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'
                               : isFailed
-                                ? 'border-red-700 bg-red-900/20 text-red-300'
+                                ? 'border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300'
                                 : isSkipped
-                                  ? 'border-slate-700 bg-slate-900/40 text-slate-400'
-                                  : 'border-cyan-600 bg-cyan-900/30 text-cyan-200'
+                                  ? 'border-slate-300 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400'
+                                  : 'border-blue-300 bg-blue-50 text-blue-600 dark:border-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-200'
                           }`}
                         >
                           {isDone ? '✓' : isFailed ? '!' : isSkipped ? '-' : '…'}
                         </span>
-                        <div className="min-w-0">
-                          <div className={isDone ? 'text-emerald-200' : isFailed ? 'text-red-200' : 'text-cyan-100'}>
+                        <div className="min-w-0 pt-0.5">
+                          <div className={`font-medium ${isDone ? 'text-emerald-700 dark:text-emerald-200' : isFailed ? 'text-red-700 dark:text-red-200' : 'text-blue-700 dark:text-cyan-100'}`}>
                             {stage.label}
                           </div>
                           {stage.detail && isLast && (
-                            <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-2">{stage.detail}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">{stage.detail}</div>
                           )}
                         </div>
                       </div>
@@ -506,32 +504,32 @@ export default function AIInsightsPanel({
           )}
 
           {optResult && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {optResult.agenticFlow && (
-                <details className="border border-slate-700 rounded p-2 bg-slate-900/40" open>
-                  <summary className="cursor-pointer text-xs text-slate-300">
+                <details className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-3 bg-white dark:bg-slate-900/40 shadow-sm transition-colors" open>
+                  <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none">
                     Agentic Execution Trace
                   </summary>
-                  <div className="mt-2 space-y-3">
-                    <div className="space-y-2">
+                  <div className="mt-3 space-y-3">
+                    <div className="space-y-2.5">
                       {optResult.agenticFlow.stages.map((s, idx) => (
-                        <div key={`${s.key}-${idx}`} className="rounded border border-slate-700 bg-slate-950/30 p-2">
-                          <div className="flex items-start gap-2">
+                        <div key={`${s.key}-${idx}`} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/30 p-3 shadow-sm transition-colors">
+                          <div className="flex items-start gap-2.5">
                             <span
-                              className={`mt-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full border text-[10px] ${
+                              className={`mt-0.5 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full border text-[10px] font-bold ${
                                 s.status === 'completed'
-                                  ? 'border-emerald-700/70 bg-emerald-950/40 text-emerald-300'
+                                  ? 'border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700/70 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : s.status === 'failed'
-                                    ? 'border-red-700/70 bg-red-950/30 text-red-300'
-                                    : 'border-slate-700 bg-slate-900/30 text-slate-400'
+                                    ? 'border-red-300 bg-red-100 text-red-700 dark:border-red-700/70 dark:bg-red-950/30 dark:text-red-300'
+                                    : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-900/30 dark:text-slate-400'
                               }`}
                             >
                               {s.status === 'completed' ? '✓' : s.status === 'failed' ? '!' : '-'}
                             </span>
                             <div className="min-w-0">
-                              <div className="text-xs text-slate-100">{s.label}</div>
+                              <div className="text-xs font-semibold text-slate-800 dark:text-slate-100">{s.label}</div>
                               {s.detail && (
-                                <div className="text-[11px] text-slate-400 mt-1 whitespace-pre-wrap">
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 whitespace-pre-wrap leading-relaxed">
                                   {s.detail}
                                 </div>
                               )}
@@ -543,20 +541,20 @@ export default function AIInsightsPanel({
 
                     {(optResult.agenticFlow.plannerTrace?.original?.length ||
                       optResult.agenticFlow.plannerTrace?.suggested?.length) && (
-                      <details className="border border-slate-700 rounded p-2 bg-slate-900/30">
-                        <summary className="cursor-pointer text-[11px] text-slate-300">
+                      <details className="border border-slate-200 dark:border-slate-700/60 rounded-md p-3 bg-slate-50 dark:bg-slate-900/30 shadow-sm transition-colors">
+                        <summary className="cursor-pointer text-[11px] font-semibold text-slate-600 dark:text-slate-300 outline-none">
                           Planner Tool Trace (Source discovery / schema probes / compile-repair loop)
                         </summary>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3">
                           <div>
-                            <div className="text-[11px] text-slate-400 mb-1">Original Validation Planner</div>
-                            <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-56 whitespace-pre-wrap">
+                            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Original Validation Planner</div>
+                            <pre className="text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-56 whitespace-pre-wrap shadow-inner">
                               {(optResult.agenticFlow.plannerTrace.original || []).join('\n') || '(no trace)'}
                             </pre>
                           </div>
                           <div>
-                            <div className="text-[11px] text-slate-400 mb-1">Suggested Validation Planner</div>
-                            <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-56 whitespace-pre-wrap">
+                            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Suggested Validation Planner</div>
+                            <pre className="text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-56 whitespace-pre-wrap shadow-inner">
                               {(optResult.agenticFlow.plannerTrace.suggested || []).join('\n') || '(no trace)'}
                             </pre>
                           </div>
@@ -567,27 +565,27 @@ export default function AIInsightsPanel({
                 </details>
               )}
 
-              <div className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <p className="text-xs font-medium text-white mb-1">Estimated Runtime Change</p>
-                <p className="text-xs text-slate-300">{optResult.aiSuggestion.estimated_runtime_change}</p>
-                <p className="text-xs text-slate-400 mt-2">{optResult.aiSuggestion.why}</p>
+              <div className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-1.5 uppercase tracking-wider">Estimated Runtime Change</p>
+                <p className="text-sm font-semibold text-blue-600 dark:text-cyan-300">{optResult.aiSuggestion.estimated_runtime_change}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2.5 leading-relaxed">{optResult.aiSuggestion.why}</p>
               </div>
 
               {optResult.originalExplainSummary && (
-                <details className="border border-slate-700 rounded p-2 bg-slate-900/40">
-                  <summary className="cursor-pointer text-xs text-slate-300">
+                <details className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-3 bg-white dark:bg-slate-900/40 shadow-sm transition-colors">
+                  <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none">
                     EXPLAIN Summary Used for Rewrite Prompt
                   </summary>
-                  <pre className="mt-2 text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-56 whitespace-pre-wrap">
+                  <pre className="mt-3 text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-56 whitespace-pre-wrap shadow-inner">
                     {optResult.originalExplainSummary}
                   </pre>
                 </details>
               )}
 
               {optResult.aiSuggestion.likely_issues?.length > 0 && (
-                <div className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                  <p className="text-xs font-medium text-white mb-2">Likely Issues</p>
-                  <ul className="list-disc pl-4 text-xs text-slate-300 space-y-1">
+                <div className="border border-red-200 dark:border-red-900/40 rounded-lg p-4 bg-red-50/50 dark:bg-red-950/10 shadow-sm transition-colors">
+                  <p className="text-xs font-bold text-red-800 dark:text-red-300 mb-2.5 uppercase tracking-wider">Likely Issues</p>
+                  <ul className="list-disc pl-5 text-xs text-red-700 dark:text-red-200/80 space-y-1.5 marker:text-red-400">
                     {optResult.aiSuggestion.likely_issues.map((issue, idx) => (
                       <li key={idx}>{issue}</li>
                     ))}
@@ -595,53 +593,49 @@ export default function AIInsightsPanel({
                 </div>
               )}
 
-              <div className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <p className="text-xs font-medium text-white mb-2">Suggested Query</p>
-                <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-64">
+              <div className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider">Suggested Query</p>
+                <pre className="text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-64 shadow-inner">
                   {optResult.aiSuggestion.suggested_query}
                 </pre>
               </div>
 
-              <div className="border border-slate-700 rounded-lg p-3 bg-slate-900/50">
-                <p className="text-xs font-medium text-white mb-2">Reduced Sample Validation</p>
-                <p className="text-xs text-slate-300 mb-2">{optResult.reducedValidation.message}</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <div className="rounded border border-slate-700 px-2 py-1 bg-slate-950/40">
-                    <span className="text-slate-500">Limit</span>
-                    <div className="text-slate-200">{optResult.reducedValidation.limit}</div>
+              <div className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-4 bg-white dark:bg-slate-900/50 shadow-sm transition-colors">
+                <p className="text-xs font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-wider">Reduced Sample Validation</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">{optResult.reducedValidation.message}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                  <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500">Limit</span>
+                    <div className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">{optResult.reducedValidation.limit}</div>
                   </div>
-                  <div className="rounded border border-slate-700 px-2 py-1 bg-slate-950/40">
-                    <span className="text-slate-500">Executed</span>
-                    <div className="text-slate-200">
+                  <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500">Executed</span>
+                    <div className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">
                       {optResult.reducedValidation.executedOnSnowflake ? 'Yes (Snowflake)' : 'No'}
                     </div>
                   </div>
-                  <div className="rounded border border-slate-700 px-2 py-1 bg-slate-950/40">
-                    <span className="text-slate-500">Columns</span>
-                    <div className="text-slate-200">{flag(optResult.reducedValidation.columnsMatch)}</div>
+                  <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500">Columns</span>
+                    <div className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">{flag(optResult.reducedValidation.columnsMatch)}</div>
                   </div>
-                  <div className="rounded border border-slate-700 px-2 py-1 bg-slate-950/40">
-                    <span className="text-slate-500">Exact</span>
-                    <div className="text-slate-200">{flag(optResult.reducedValidation.exactSampleMatch)}</div>
-                  </div>
-                  <div className="rounded border border-slate-700 px-2 py-1 bg-slate-950/40">
-                    <span className="text-slate-500">Normalized</span>
-                    <div className="text-slate-200">{flag(optResult.reducedValidation.normalizedSetMatch)}</div>
+                  <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500">Exact</span>
+                    <div className="text-slate-800 dark:text-slate-200 font-medium mt-0.5">{flag(optResult.reducedValidation.exactSampleMatch)}</div>
                   </div>
                 </div>
 
                 {(optResult.reducedValidation.originalValidationSource ||
                   optResult.reducedValidation.suggestedValidationSource) && (
-                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                    <div className="rounded border border-slate-700 px-2 py-2 bg-slate-950/40">
-                      <div className="text-slate-500 mb-1">Original Validation Derivation</div>
-                      <div className="text-slate-300">
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2.5 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-1">Original Validation Derivation</div>
+                      <div className="text-slate-800 dark:text-slate-300 font-mono text-[11px]">
                         {optResult.reducedValidation.originalValidationSource || '-'}
                       </div>
                     </div>
-                    <div className="rounded border border-slate-700 px-2 py-2 bg-slate-950/40">
-                      <div className="text-slate-500 mb-1">Suggested Validation Derivation</div>
-                      <div className="text-slate-300">
+                    <div className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2.5 bg-slate-50 dark:bg-slate-950/40 shadow-sm">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-500 mb-1">Suggested Validation Derivation</div>
+                      <div className="text-slate-800 dark:text-slate-300 font-mono text-[11px]">
                         {optResult.reducedValidation.suggestedValidationSource || '-'}
                       </div>
                     </div>
@@ -650,20 +644,20 @@ export default function AIInsightsPanel({
 
                 {(optResult.reducedValidation.originalValidationQuery ||
                   optResult.reducedValidation.suggestedValidationQuery) && (
-                  <details className="mt-3 border border-slate-700 rounded p-2 bg-slate-900/40">
-                    <summary className="cursor-pointer text-xs text-slate-300">
+                  <details className="mt-4 border border-slate-200 dark:border-slate-700/60 rounded-md p-3 bg-slate-50 dark:bg-slate-900/40 transition-colors">
+                    <summary className="cursor-pointer text-xs font-semibold text-slate-600 dark:text-slate-300 outline-none">
                       Derived Validation Queries (Executed on Snowflake when available)
                     </summary>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3">
                       <div>
-                        <div className="text-[11px] text-slate-400 mb-1">Original Validation Query</div>
-                        <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-56">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">Original Validation Query</div>
+                        <pre className="text-xs bg-slate-200/50 dark:bg-black/40 border border-slate-300/50 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-56 shadow-inner">
                           {optResult.reducedValidation.originalValidationQuery || '(not derived)'}
                         </pre>
                       </div>
                       <div>
-                        <div className="text-[11px] text-slate-400 mb-1">Suggested Validation Query</div>
-                        <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-56">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">Suggested Validation Query</div>
+                        <pre className="text-xs bg-slate-200/50 dark:bg-black/40 border border-slate-300/50 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-56 shadow-inner">
                           {optResult.reducedValidation.suggestedValidationQuery || '(not derived)'}
                         </pre>
                       </div>
@@ -672,13 +666,13 @@ export default function AIInsightsPanel({
                 )}
               </div>
 
-              <details className="border border-slate-700 rounded p-2 bg-slate-900/40">
-                <summary className="cursor-pointer text-xs text-slate-300">EXPLAIN Plans (Original vs Suggested)</summary>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
-                  <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-64">
+              <details className="border border-slate-200 dark:border-slate-700/60 rounded-lg p-3 bg-white dark:bg-slate-900/40 shadow-sm transition-colors">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none">EXPLAIN Plans (Original vs Suggested)</summary>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3">
+                  <pre className="text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-64 shadow-inner">
                     {optResult.originalExplainText}
                   </pre>
-                  <pre className="text-xs bg-black/40 p-2 rounded overflow-auto text-slate-300 max-h-64">
+                  <pre className="text-xs bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-slate-800/80 p-3 rounded-md overflow-auto text-slate-800 dark:text-slate-300 max-h-64 shadow-inner">
                     {optResult.suggestedExplainText}
                   </pre>
                 </div>
@@ -688,52 +682,53 @@ export default function AIInsightsPanel({
         </div>
       )}
 
-      <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <h4 className="font-semibold text-white text-sm">Ask Follow-up</h4>
-          {chatLoading && <span className="text-xs text-slate-400">Cortex is thinking...</span>}
+      {/* Ask Follow-up Chat */}
+      <div className="bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 shadow-sm transition-colors">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider">Ask Follow-up</h4>
+          {chatLoading && <span className="text-xs font-semibold text-blue-600 dark:text-cyan-400 animate-pulse">Cortex is thinking...</span>}
         </div>
 
         {chatMessages.length > 0 && (
-          <div className="space-y-2 mb-3 max-h-56 overflow-y-auto pr-1">
+          <div className="space-y-3 mb-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
             {chatMessages.map((m, idx) => (
               <div
                 key={idx}
-                className={`rounded-lg border p-2 text-xs ${
+                className={`rounded-xl border p-3.5 text-xs shadow-sm transition-colors ${
                   m.role === 'user'
-                    ? 'bg-cyan-950/20 border-cyan-800/40 text-cyan-100'
-                    : 'bg-slate-900/60 border-slate-700 text-slate-200'
+                    ? 'bg-blue-50 dark:bg-cyan-950/20 border-blue-200 dark:border-cyan-800/40 text-blue-900 dark:text-cyan-100 ml-6 rounded-tr-sm'
+                    : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 mr-6 rounded-tl-sm'
                 }`}
               >
-                <div className="uppercase tracking-wide text-[10px] mb-1 opacity-70">{m.role}</div>
-                <p className="whitespace-pre-wrap">{m.content}</p>
+                <div className="uppercase tracking-wider font-bold text-[10px] mb-1.5 opacity-60">{m.role}</div>
+                <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
               </div>
             ))}
           </div>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <textarea
             value={followUp}
             onChange={(e) => setFollowUp(e.target.value)}
             placeholder="Ask a question about this widget, the evidence, or a recommendation..."
-            className="w-full min-h-20 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-600"
+            className="w-full min-h-24 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-600 shadow-inner transition-all"
           />
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[11px] text-slate-500">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
               Uses current widget data sample + current AI insight as context.
             </p>
             <button
               type="button"
               onClick={sendFollowUp}
               disabled={chatLoading || !followUp.trim() || !insight}
-              className="inline-flex items-center rounded-md border border-cyan-700/50 bg-cyan-950/30 px-3 py-1.5 text-xs font-medium text-cyan-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-cyan-900/40"
+              className="inline-flex items-center rounded-lg border border-blue-300 dark:border-cyan-700/50 bg-blue-600 dark:bg-cyan-950/30 px-4 py-2 text-xs font-bold tracking-wide uppercase text-white dark:text-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 dark:hover:bg-cyan-900/40 shadow-md transition-colors"
             >
               Ask Cortex
             </button>
           </div>
           {chatError && (
-            <div className="text-xs text-red-300 border border-red-900/40 bg-red-950/20 rounded-md px-2 py-1.5">
+            <div className="text-xs text-red-700 dark:text-red-300 border border-red-300 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 rounded-lg px-3 py-2.5 mt-2 shadow-sm">
               {chatError}
             </div>
           )}
@@ -746,6 +741,33 @@ export default function AIInsightsPanel({
 function flag(v: boolean | undefined): string {
   if (typeof v === 'undefined') return '-'
   return v ? 'Yes' : 'No'
+}
+// ✨ FIX: Custom lightweight Markdown parser for chat messages
+function FormattedMessage({ text }: { text: string }) {
+  // Split the text by bold (**text**) or inline code (`text`)
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+  
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <strong key={i} className="font-bold text-slate-900 dark:text-white">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (part.startsWith('`') && part.endsWith('`')) {
+          return (
+            <code key={i} className="px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-black/30 font-mono text-[11px] text-blue-700 dark:text-cyan-300">
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
 }
 
 async function readNdjsonStream(

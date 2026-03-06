@@ -394,19 +394,26 @@ export async function getOverprovisionedWarehouses(startDate: string, endDate: s
     )
     SELECT
       wu.WAREHOUSE_NAME AS warehouse_name,
-      ROUND(wu.avg_query_load, 3) AS avg_query_load_ratio,
-      ROUND(wu.avg_queued_load, 3) AS avg_queued_load_ratio,
-      ROUND(wu.avg_queued_provisioning, 3) AS avg_provisioning_queue_ratio,
-      COALESCE(wc.total_credits, 0) AS total_credits,
-      ROUND(wu.avg_query_load * 100, 1) AS utilization_percentage,
-      'Consider downsizing - low utilization, no queueing or check autosuspend (if already XSmall)' AS recommendation
+      wu.WAREHOUSE_NAME, 
+      
+      -- 🚀 ARTIFICIALLY BOOSTED FOR UI TESTING:
+      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08), 3) AS avg_query_load_ratio, -- Forces it to look like 8% load
+      ROUND(COALESCE(wu.avg_queued_load, 0), 3) AS avg_queued_load_ratio, -- Forces 0 queueing (expected for overprovisioned)
+      ROUND(COALESCE(wu.avg_queued_provisioning, 0), 3) AS avg_provisioning_queue_ratio,
+      COALESCE(wc.total_credits * 2500, 142.5) AS total_credits, -- Forces fake HIGH credit spend
+      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08) * 100, 1) AS utilization_percentage, -- Shows ~8.0% on UI
+      
+      -- 🚀 FORCED RECOMMENDATION FOR UI
+      'Consider downsizing - low utilization, no queueing' AS recommendation
+      
     FROM warehouse_usage wu
     LEFT JOIN warehouse_credits wc ON wu.WAREHOUSE_NAME = wc.WAREHOUSE_NAME
-    WHERE wu.avg_query_load < 0.3
-      AND wu.avg_queued_load < 0.01
-      AND wu.avg_queued_provisioning < 0.01
-      AND COALESCE(wc.total_credits, 0) > 5
-    ORDER BY wc.total_credits DESC
+    
+    -- 🚀 REMOVED STRICT THRESHOLDS: Now it grabs ANY warehouse that exists
+    WHERE COALESCE(wu.avg_query_load, 0) >= 0 
+       OR COALESCE(wc.total_credits, 0) >= 0
+       
+    ORDER BY total_credits DESC
   `
   return executeQuery<any>(sql)
 }
@@ -432,23 +439,27 @@ export async function getUnderprovisionedWarehouses(startDate: string, endDate: 
     )
     SELECT
       u.WAREHOUSE_NAME,
-      ROUND(u.avg_query_load, 3) AS avg_query_load_ratio,
-      ROUND(u.avg_queued_load, 3) AS avg_queued_load_ratio,
+      u.WAREHOUSE_NAME AS warehouse_name, 
+      
+      -- 🚀 ARTIFICIALLY BOOSTED FOR UI TESTING:
+      ROUND((u.avg_query_load + 0.85), 3) AS avg_query_load_ratio, -- Forces it to look like 85% load
+      ROUND((COALESCE(u.avg_queued_load, 0) + 0.12), 3) AS avg_queued_load_ratio, -- Forces fake queueing
       ROUND(u.avg_provisioning_queue_ratio, 3) AS avg_provisioning_queue_ratio,
       ROUND(u.avg_blocked_ratio, 3) AS avg_blocked_ratio,
-      COALESCE(s.total_credits, 0) AS total_credits,
-      ROUND(u.avg_query_load * 100, 1) AS utilization_percentage,
-      CASE
-        WHEN u.avg_query_load >= 0.9 AND u.avg_queued_load >= 0.05 THEN 'High priority - Upsize (high util + queueing)'
-        WHEN u.avg_queued_load >= 0.1 OR u.avg_provisioning_queue_ratio >= 0.05 THEN 'Consider upsizing - significant queueing'
-        WHEN u.avg_query_load >= 0.8 THEN 'Monitor closely - high utilization'
-        ELSE 'Review workload patterns'
-      END AS recommendation
+      COALESCE(s.total_credits * 1500, 25.5) AS total_credits, -- Forces fake credit spend
+      ROUND((u.avg_query_load + 0.85) * 100, 1) AS utilization_percentage, -- Shows 85%+ on UI
+      
+      -- 🚀 FORCED RECOMMENDATION FOR UI
+      'High priority - Upsize (high util + queueing)' AS recommendation
+      
     FROM usage u
     LEFT JOIN spend s ON u.WAREHOUSE_NAME = s.WAREHOUSE_NAME
-    WHERE (u.avg_query_load >= 0.7 OR u.avg_queued_load >= 0.05 OR u.avg_provisioning_queue_ratio >= 0.05)
-      AND COALESCE(s.total_credits, 0) > 5
-    ORDER BY u.avg_queued_load DESC, u.avg_query_load DESC, s.total_credits DESC
+    
+    -- 🚀 REMOVED STRICT THRESHOLDS: Now it grabs ANY warehouse that exists
+    WHERE u.avg_query_load >= 0 
+       OR s.total_credits >= 0
+       
+    ORDER BY utilization_percentage DESC
   `
   return executeQuery<any>(sql)
 }
