@@ -36,6 +36,8 @@ type EmptyStateProps = {
   desc: string
 }
 
+
+
 const EmptyState = ({ icon: Icon, title, desc }: EmptyStateProps) => (
   <div className="flex flex-col items-center justify-center py-16 text-center w-full">
     <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-3 border border-slate-200 dark:border-slate-700/50">

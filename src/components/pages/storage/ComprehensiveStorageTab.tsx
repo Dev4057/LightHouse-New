@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatBytes, formatNumber, shortenText } from '@/lib/formatting'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import { useTheme } from 'next-themes'
+import LighthouseLoader from '@/components/ui/LighthouseLoader'
 
 const PIE_COLORS = ['#3b82f6', '#0ea5e9', '#2dd4bf', '#8b5cf6', '#6366f1', '#4f46e5', '#1e40af']
 
@@ -77,8 +78,8 @@ export default function ComprehensiveStorageTab({ dateRange }: { dateRange: { st
     fontSize: '12px'
   }
 
-  if (isLoading || !mounted) {
-    return <div className="flex items-center justify-center py-24 w-full min-w-0"><Loader className="w-10 h-10 text-blue-500 animate-spin" /></div>
+if (isLoading || !mounted) {
+    return <LighthouseLoader />
   }
 
   const kpi = summaryKpi?.[0]
@@ -135,8 +136,12 @@ export default function ComprehensiveStorageTab({ dateRange }: { dateRange: { st
                     <Pie data={summaryDist.slice(0, 8)} dataKey="TOTAL_BYTES" nameKey="DATABASE_NAME" outerRadius={100} innerRadius={60} paddingAngle={2} labelLine={false}>
                       {summaryDist.slice(0, 8).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="rgba(255,255,255,0.1)" />)}
                     </Pie>
-                    <Tooltip contentStyle={glassTooltip} formatter={(v) => formatBytes(v as number)} />
-                    <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
+<Tooltip 
+  contentStyle={glassTooltip} 
+  formatter={(v) => formatBytes(v as number)} 
+  // ✨ ADD THIS LINE to control the text color:
+  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+/>                    <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

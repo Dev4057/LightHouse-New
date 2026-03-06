@@ -18,8 +18,8 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
   const [cmdkOpen, setCmdkOpen] = useState(false)
   
   // Theme State
-const { resolvedTheme, setTheme } = useTheme()
-const [mounted, setMounted] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
   const spendDisplayMode = useDisplaySettingsStore((s) => s.spendDisplayMode)
   const usdPerCredit = useDisplaySettingsStore((s) => s.usdPerCredit)
@@ -34,6 +34,10 @@ const [mounted, setMounted] = useState(false)
     '/api/system?type=last_refresh',
     { staleTime: 60_000, gcTime: 5 * 60_000 }
   )
+
+  // ✨ ENV Variable Handling with Fallback logic
+  const accountName = process.env.NEXT_PUBLIC_ACCOUNT_NAME || 'Admin User'
+  const accountEmail = process.env.NEXT_PUBLIC_ACCOUNT_EMAIL || 'admin@lighthouse.dev'
 
   // Prevent hydration mismatch by mounting theme elements only on client
   useEffect(() => {
@@ -292,14 +296,18 @@ const [mounted, setMounted] = useState(false)
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md dark:shadow-lg dark:shadow-blue-500/20 border border-blue-400/20 group-hover:scale-105 transition-transform">
                 <User className="w-4 h-4 text-white" />
               </div>
-              <span className="hidden sm:inline text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">User</span>
+              {/* ✨ Replaced static "User" with dynamic accountName */}
+              <span className="hidden sm:inline text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                {accountName}
+              </span>
             </button>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700/50 mb-1">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">Admin User</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">admin@lighthouse.dev</p>
+                  {/* ✨ Replaced static dropdown text with dynamic variables */}
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate" title={accountName}>{accountName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={accountEmail}>{accountEmail}</p>
                 </div>
                 <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Profile</a>
                 <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Preferences</a>
@@ -312,9 +320,9 @@ const [mounted, setMounted] = useState(false)
       </div>
 
       {/* Status bar */}
-      <div className="px-6 py-1.5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-700/30 text-[11px] font-medium tracking-wide text-slate-500 dark:text-slate-400 flex items-center justify-between transition-colors duration-300">
+      <div className="px-6 py-1.5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-700/30 text-[11px] font-medium tracking-wide text-slate-800 dark:text-slate-400 flex items-center justify-between transition-colors duration-300">
         <span>Last updated: {refreshError ? '-' : (refreshStatus?.formatted || 'Loading...')}</span>
-        <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+        <span className="flex items-center gap-2 text-slate-800 dark:text-slate-300">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>

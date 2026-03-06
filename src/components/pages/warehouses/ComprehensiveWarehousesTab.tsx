@@ -10,6 +10,7 @@ import { useSpendDisplay } from '@/hooks/useSpendDisplay'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import type { WarehouseCredit, ServiceCredit, IdleCost, OverprovisionedWH, UnderprovisionedWH, WarehouseUser, DormantWarehouse, MixedWorkload, Warehouse } from '@/types'
 import { useTheme } from 'next-themes'
+import LighthouseLoader from '@/components/ui/LighthouseLoader'
 
 interface WarehousesPageProps {
   dateRange: { start: Date; end: Date }
@@ -154,13 +155,8 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
     }
   }
 
-  if (isLoading || !mounted) {
-    return (
-      <div className="space-y-8 w-full min-w-0 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><SkeletonCard /><SkeletonCard /></div>
-        <SkeletonCard className="h-[400px]" />
-      </div>
-    )
+if (isLoading || !mounted) {
+    return <LighthouseLoader />
   }
 
   if (!hasData) {
@@ -234,8 +230,12 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
                         width={60}
                         label={{ value: creditUnitLabel, angle: -90, position: 'insideLeft', offset: 15, fill: axisColor, fontSize: 11, fontWeight: 600 }}
                       />
-                      <Tooltip contentStyle={glassTooltipStyle} cursor={{ fill: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }} formatter={(v) => formatCreditValue(v as number)} />
-                      <Bar dataKey="TOTAL_SPEND_DISPLAY" fill="url(#whGrad)" radius={[2, 2, 0, 0]} maxBarSize={40} />
+<Tooltip 
+  contentStyle={glassTooltipStyle} 
+  formatter={(v) => formatCreditValue(v as number)} 
+  // ✨ ADD THIS LINE to control the text color:
+  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+/>                      <Bar dataKey="TOTAL_SPEND_DISPLAY" fill="url(#whGrad)" radius={[2, 2, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -305,8 +305,12 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
                           />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={glassTooltipStyle} formatter={(v) => formatCreditValue(v as number)} />
-                      <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
+<Tooltip 
+  contentStyle={glassTooltipStyle} 
+  formatter={(v) => formatCreditValue(v as number)} 
+  // ✨ ADD THIS LINE to control the text color:
+  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+/>                        <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
