@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from "next/image";
+import Image from "next/image"
+import { useSession } from 'next-auth/react' // 👈 Added NextAuth
 import {
   BarChart3,
   Zap,
@@ -16,11 +17,15 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
+// Define our valid roles
+type Role = 'WORKSPACE_ADMIN' | 'COMPUTE_ADMIN' | 'DEVELOPER'
+
 interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
   badge?: string
+  allowedRoles: Role[] // 👈 Added strict RBAC control
 }
 
 interface NavSection {
@@ -28,32 +33,36 @@ interface NavSection {
   items: NavItem[]
 }
 
+// 🚨 THE ACCESS MATRIX 🚨
 const navSections: NavSection[] = [
   {
     title: 'Overview',
     items: [
-      { label: 'Dashboard', href: '/', icon: <BarChart3 className="w-5 h-5" /> },
+      { label: 'Dashboard', href: '/', icon: <BarChart3 className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
     ],
   },
   {
     title: 'Monitoring',
     items: [
-      { label: 'Queries', href: '/queries', icon: <Zap className="w-5 h-5" /> },
-      { label: 'Warehouses', href: '/warehouses', icon: <Database className="w-5 h-5" /> },
-      { label: 'Storage', href: '/storage', icon: <Package className="w-5 h-5" /> },
+      { label: 'Queries', href: '/queries', icon: <Zap className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+      // Devs cannot see Warehouses or Storage
+      { label: 'Warehouses', href: '/warehouses', icon: <Database className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
+      { label: 'Storage', href: '/storage', icon: <Package className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
     ],
   },
   {
     title: 'Optimization',
     items: [
-      { label: 'Performance', href: '/performance', icon: <TrendingUp className="w-5 h-5" /> },
-      { label: 'Recommendations', href: '/recommendations', icon: <Settings className="w-5 h-5" /> },
+      { label: 'Performance', href: '/performance', icon: <TrendingUp className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+      // Only Admins get AI Recommendations
+      { label: 'Recommendations', href: '/recommendations', icon: <Settings className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN'] },
     ],
   },
   {
     title: 'Security',
+    // Only Admins can view Identity & Access
     items: [
-      { label: 'Identity & Access', href: '/identity', icon: <Shield className="w-5 h-5" /> },
+      { label: 'Identity & Access', href: '/identity', icon: <Shield className="w-5 h-5" />, allowedRoles: ['WORKSPACE_ADMIN'] },
     ],
   },
 ]
@@ -68,6 +77,8 @@ export default function Sidebar({
   onToggle: () => void 
 }) {
   const pathname = usePathname()
+  const { data: session } = useSession() // 👈 Grab the logged-in user
+  const userRole = (session?.user?.role as Role) || 'DEVELOPER' // Default to lowest privilege if loading
   
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(navSections.map(s => s.title))
@@ -97,9 +108,14 @@ export default function Sidebar({
     if (isMobile) onToggle()
   }
 
+  // 👈 Filter out sections and items the user isn't allowed to see!
+  const authorizedSections = navSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => item.allowedRoles.includes(userRole))
+  })).filter(section => section.items.length > 0) // Remove empty sections
+
   return (
     <>
-      {/* Overlay for mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -112,7 +128,6 @@ export default function Sidebar({
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <motion.aside
         layout
         initial={false}
@@ -123,20 +138,14 @@ export default function Sidebar({
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="fixed z-40 h-screen glass border-r border-slate-200 dark:border-slate-700/50 flex flex-col left-0 top-0 overflow-hidden"
       >
-        {/* Logo */}
+        {/* Logo Section */}
         <div
           className={`flex items-center gap-3 px-6 py-6 border-b border-slate-200 dark:border-slate-700/50 ${
             isCollapsed ? "justify-center px-0" : ""
           }`}
         >
           <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden">
-            <Image
-              src="/spectra.svg"
-              alt="Spectra Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
+            <Image src="/spectra.svg" alt="Spectra Logo" width={40} height={40} className="object-contain" />
           </div>
 
           <AnimatePresence mode="wait">
@@ -147,45 +156,26 @@ export default function Sidebar({
                 exit={{ opacity: 0, width: 0 }}
                 className="flex-1 whitespace-nowrap"
               >
-                {/* Light: black | Dark: white (original) */}
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  Lighthouse
-                </h1>
-                <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">
-                  Snowflake Monitor
-                </p>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Lighthouse</h1>
+                <p className="text-xs text-blue-500 dark:text-blue-400 font-medium">Snowflake Monitor</p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Navigation */}
+        {/* Dynamic Navigation */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6 space-y-6 scrollbar-hide">
-          {navSections.map((section) => (
+          {authorizedSections.map((section) => (
             <div key={section.title} className="px-3">
               <button
                 onClick={() => toggleSection(section.title)}
                 className={`flex items-center w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
                   isCollapsed ? 'justify-center' : 'justify-between'
-                }
-                  /* Light: dark slate | Dark: original slate-400 */
-                  text-slate-600 dark:text-slate-400
-                  hover:text-slate-900 dark:hover:text-slate-200
-                `}
+                } text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200`}
               >
-                {!isCollapsed && (
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    {section.title}
-                  </motion.span>
-                )}
-                {!isCollapsed && (
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
-                    expandedSections.has(section.title) ? 'rotate-180' : ''
-                  }`} />
-                )}
-                {isCollapsed && (
-                  <span className="block w-4 border-b border-slate-300 dark:border-slate-600 rounded" />
-                )}
+                {!isCollapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{section.title}</motion.span>}
+                {!isCollapsed && <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedSections.has(section.title) ? 'rotate-180' : ''}`} />}
+                {isCollapsed && <span className="block w-4 border-b border-slate-300 dark:border-slate-600 rounded" />}
               </button>
 
               <AnimatePresence>
@@ -207,24 +197,13 @@ export default function Sidebar({
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
                             isActive
                               ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
-                              // Light: slate-700 (near black) | Dark: original slate-400
                               : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
                           } ${isCollapsed ? 'justify-center' : ''}`}
                         >
-                          <div className={
-                            isActive
-                              ? 'text-blue-600 dark:text-blue-400'
-                              // Light: slate-600 | Dark: original slate-400
-                              : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors'
-                          }>
+                          <div className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors'}>
                             {item.icon}
                           </div>
-                          {!isCollapsed && (
-                            // Light: black | Dark: inherits from parent link class
-                            <span className="flex-1 text-sm font-medium whitespace-nowrap">
-                              {item.label}
-                            </span>
-                          )}
+                          {!isCollapsed && <span className="flex-1 text-sm font-medium whitespace-nowrap">{item.label}</span>}
                           {!isCollapsed && item.badge && (
                             <span className="px-2 py-0.5 bg-blue-900/50 border border-blue-700/50 text-blue-200 text-[10px] uppercase font-bold tracking-wider rounded-full">
                               {item.badge}
@@ -243,7 +222,6 @@ export default function Sidebar({
         {/* Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-700/50 flex justify-center">
           {!isCollapsed ? (
-            // Light: slate-600 | Dark: original slate-500
             <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">v0.1.0 Beta</p>
           ) : (
             <div className="w-2 h-2 rounded-full bg-blue-500/50" />

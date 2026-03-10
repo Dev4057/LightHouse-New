@@ -1,32 +1,36 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react' // ✨ Imported NextAuth session
 import KPICard from './KPICard'
 import type { KPICardProps } from './KPICard'
 import DateRangeSelector from './DateRangeSelector'
 import ChartsGrid from './ChartsGrid'
 import AlertsPanel from './AlertsPanel'
-import LighthouseLoader from '@/components/ui/LighthouseLoader' // ✨ Imported the new loader
+import LighthouseLoader from '@/components/ui/LighthouseLoader'
 import { formatNumber, formatSeconds } from '@/lib/formatting'
 import { useSpendDisplay } from '@/hooks/useSpendDisplay'
 import type { KPIMetrics } from '@/types'
 
+// Define our valid roles
+type Role = 'WORKSPACE_ADMIN' | 'COMPUTE_ADMIN' | 'DEVELOPER'
+
 export default function Dashboard() {
+  const { data: session } = useSession() // ✨ Grab the logged-in user
+  const userRole = (session?.user?.role as Role) || 'DEVELOPER' // Default to lowest privilege
+
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     end: new Date(),
   })
 
   const [kpiData, setKpiData] = useState<KPIMetrics | null>(null)
-  
-  // ✨ ADDED: Loading state for the splash screen
   const [isLoading, setIsLoading] = useState(true)
-  
   const { formatCreditValue, creditUnitLabel } = useSpendDisplay()
 
   useEffect(() => {
     async function fetchKPIs() {
-      setIsLoading(true) // Start loading animation
+      setIsLoading(true)
       try {
         const start = dateRange.start.toISOString().split('T')[0]
         const end = dateRange.end.toISOString().split('T')[0]
@@ -38,15 +42,12 @@ export default function Dashboard() {
       } catch (error) {
         console.error('Failed to fetch KPI data:', error)
       } finally {
-        // ✨ Add a tiny 500ms delay so the splash screen doesn't jitter 
-        // if the API responds too quickly.
         setTimeout(() => setIsLoading(false), 500)
       }
     }
     fetchKPIs()
   }, [dateRange])
 
-  // ✨ ADDED: If loading is true, hijack the render to show the splash screen
   if (isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -55,37 +56,41 @@ export default function Dashboard() {
     )
   }
 
-  const kpiCards: KPICardProps[] = kpiData
+  // ✨ THE ACCESS MATRIX FOR KPI CARDS ✨
+  // We add 'allowedRoles' to easily filter out financial data
+  const allKpiCards = kpiData
     ? [
-        { label: `${creditUnitLabel} Used`, value: formatCreditValue(kpiData.TOTAL_CREDITS_USED || 0), change: '+12.5%', icon: 'zap' },
-        { label: 'Queries Executed', value: formatNumber(kpiData.TOTAL_QUERIES_EXECUTED || 0), change: '+8.2%', icon: 'activity' },
-        { label: 'Avg Query Time', value: formatSeconds(kpiData.AVERAGE_QUERY_TIME || 0), change: '-3.1%', icon: 'clock' },
-        { label: 'Failed Queries', value: formatNumber(kpiData.FAILED_QUERY_COUNT || 0), change: '-1.2%', icon: 'database' },
+        { label: `${creditUnitLabel} Used`, value: formatCreditValue(kpiData.TOTAL_CREDITS_USED || 0), change: '+12.5%', icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] }, // 🚫 Hidden from Developers
+        { label: 'Queries Executed', value: formatNumber(kpiData.TOTAL_QUERIES_EXECUTED || 0), change: '+8.2%', icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Avg Query Time', value: formatSeconds(kpiData.AVERAGE_QUERY_TIME || 0), change: '-3.1%', icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Failed Queries', value: formatNumber(kpiData.FAILED_QUERY_COUNT || 0), change: '-1.2%', icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
       ]
     : [
-        { label: `${creditUnitLabel} Used`, value: '-', change: '-', icon: 'zap' },
-        { label: 'Queries Executed', value: '-', change: '-', icon: 'activity' },
-        { label: 'Avg Query Time', value: '-', change: '-', icon: 'clock' },
-        { label: 'Failed Queries', value: '-', change: '-', icon: 'database' },
+        { label: `${creditUnitLabel} Used`, value: '-', change: '-', icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] }, // 🚫 Hidden from Developers
+        { label: 'Queries Executed', value: '-', change: '-', icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Avg Query Time', value: '-', change: '-', icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Failed Queries', value: '-', change: '-', icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
       ]
 
+  // Filter the cards based on the user's role
+  const visibleKpiCards = allKpiCards.filter(card => card.allowedRoles.includes(userRole))
+
   return (
-    // ✨ ADDED: animate-in fade-in duration-500 so it crossfades smoothly after loading
     <div className="space-y-6 w-full min-w-0 overflow-hidden animate-in fade-in duration-500">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          {/* Light: dark text | Dark: white (original) */}
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Dashboard</h1>
         </div>
         <DateRangeSelector value={dateRange} onChange={setDateRange} />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
-        {kpiCards.map((kpi, idx) => (
-          <KPICard key={idx} {...kpi} />
+      {/* KPI Cards Grid */}
+      {/* ✨ Dynamic grid sizing: If they only see 3 cards, stretch them perfectly across 3 columns! */}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${visibleKpiCards.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 min-w-0`}>
+        {visibleKpiCards.map((kpi, idx) => (
+          <KPICard key={idx} label={kpi.label} value={kpi.value} change={kpi.change} icon={kpi.icon as any} />
         ))}
       </div>
 

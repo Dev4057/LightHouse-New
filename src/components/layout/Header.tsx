@@ -9,9 +9,11 @@ import { DEFAULT_USD_PER_CREDIT, useDisplaySettingsStore } from '@/stores/displa
 import { useNotifications } from '@/hooks/useNotifications'
 import { DialogTitle, DialogDescription } from '@radix-ui/react-dialog'
 import { useTheme } from 'next-themes'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: () => void; isSidebarOpen: boolean; }) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -35,9 +37,12 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
     { staleTime: 60_000, gcTime: 5 * 60_000 }
   )
 
-  // ✨ ENV Variable Handling with Fallback logic
-  const accountName = process.env.NEXT_PUBLIC_ACCOUNT_NAME || 'Admin User'
-  const accountEmail = process.env.NEXT_PUBLIC_ACCOUNT_EMAIL || 'admin@lighthouse.dev'
+
+  // ✨ Dynamic User Info from NextAuth Session!
+  const accountName = session?.user?.name || 'Loading...'
+  const accountEmail = session?.user?.email || 'Loading...'
+  const userRole = session?.user?.role || 'DEVELOPER'
+
 
   // Prevent hydration mismatch by mounting theme elements only on client
   useEffect(() => {
@@ -64,8 +69,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
     setCmdkOpen(false)
     command()
   }
-
-  return (
+return (
     <header className="bg-white/80 dark:bg-[#0a0e1a]/80 border-b border-slate-200 dark:border-slate-700/50 sticky top-0 z-20 backdrop-blur-md transition-colors duration-300">
       <div className="px-6 py-3 flex items-center justify-between">
         
@@ -296,7 +300,6 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md dark:shadow-lg dark:shadow-blue-500/20 border border-blue-400/20 group-hover:scale-105 transition-transform">
                 <User className="w-4 h-4 text-white" />
               </div>
-              {/* ✨ Replaced static "User" with dynamic accountName */}
               <span className="hidden sm:inline text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                 {accountName}
               </span>
@@ -305,14 +308,18 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
                 <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700/50 mb-1">
-                  {/* ✨ Replaced static dropdown text with dynamic variables */}
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate" title={accountName}>{accountName}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate" title={accountEmail}>{accountEmail}</p>
                 </div>
                 <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Profile</a>
                 <a href="#" className="block px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">Preferences</a>
                 <hr className="my-1 border-slate-200 dark:border-slate-700/50" />
-                <a href="#" className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors">Logout</a>
+                <button 
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="w-full text-left block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>

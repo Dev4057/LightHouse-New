@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
+import { useSession } from 'next-auth/react'
 import {
   BarChart,
   Bar,
@@ -31,7 +32,15 @@ const CustomXAxisTick = ({ x, y, payload }: any) => {
   )
 }
 
+type Role = 'WORKSPACE_ADMIN' | 'COMPUTE_ADMIN' | 'DEVELOPER'
+
 export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; end: Date } }) {
+  const { data: session } = useSession() // ✨ Grab the logged-in user
+  const userRole = (session?.user?.role as Role) || 'DEVELOPER' // Default to lowest privilege
+  
+  // ✨ The Access Matrix Boolean
+  const showFinancials = userRole === 'WORKSPACE_ADMIN' || userRole === 'COMPUTE_ADMIN'
+
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -46,7 +55,6 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
   const { convertCredits, formatCreditValue, creditUnitLabel } = useSpendDisplay()
 
   // ── Theme-aware chart tokens ──────────────────────────────────────────────
-  // Dark values are identical to the originals; light values are added
   const gridColor       = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'
   const axisStroke      = isDark ? '#64748b'                : '#94a3b8'
   const axisStrokeStrong= isDark ? '#475569'                : '#cbd5e1'
@@ -64,7 +72,6 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
 
   if (l1 || l2 || l3) {
     return (
-      // Light: white card with border | Dark: original card glass
       <div className="card glass bg-white/70 dark:bg-transparent border border-slate-200 dark:border-slate-700/50 flex items-center justify-center py-12">
         <Loader className="w-8 h-8 text-blue-400 animate-spin" />
       </div>
@@ -82,7 +89,6 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
     : 1
 
   // ── Shared card class ─────────────────────────────────────────────────────
-  // Light: white frosted card with slate-200 border | Dark: original chart-container
   const chartCardClass = `chart-container group
     bg-white/70 dark:bg-transparent
     border border-slate-200 dark:border-slate-700/50
@@ -93,10 +99,10 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
   return (
     <div className="space-y-6">
 
-      {/* 1. Credits & Query Trends */}
+      {/* 1. Credits & Query Trends (Dynamically hides Credits for Developers) */}
       <div className={chartCardClass}>
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-2">
-          {creditUnitLabel} &amp; Query Trends
+          {showFinancials ? `${creditUnitLabel} & Query Trends` : 'Query Trends'}
         </h3>
 
         <ResponsiveContainer width="100%" height={340}>
@@ -114,26 +120,30 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
 
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
 
-<XAxis
+            <XAxis
               dataKey="QUERY_DAY"
               stroke={axisStroke}
               axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
               tickLine={false}
               dy={10}
-              // ✨ FIX: Change from tickFill to explicit white/black
               tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
             />
-            <YAxis
-              yAxisId="left"
-              stroke="#3b82f6"
-              axisLine={{ stroke: '#3b82f6', strokeWidth: 1.5, strokeOpacity: 0.5 }}
-              tickLine={false}
-              tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
-              width={60}
-            />
+            
+            {/* ✨ Only render the Financial Y-Axis if the user has permission */}
+            {showFinancials && (
+              <YAxis
+                yAxisId="left"
+                stroke="#3b82f6"
+                axisLine={{ stroke: '#3b82f6', strokeWidth: 1.5, strokeOpacity: 0.5 }}
+                tickLine={false}
+                tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 500 }}
+                width={60}
+              />
+            )}
+            
             <YAxis
               yAxisId="right"
-              orientation="right"
+              orientation={showFinancials ? "right" : "left"} // Move to the left if it's the only axis
               stroke="#2dd4bf"
               axisLine={{ stroke: '#2dd4bf', strokeWidth: 1.5, strokeOpacity: 0.5 }}
               tickLine={false}
@@ -158,132 +168,128 @@ export default function ChartsGrid({ dateRange }: { dateRange: { start: Date; en
               verticalAlign="top"
             />
 
-            <Bar yAxisId="left"  dataKey="TOTAL_SPEND_DISPLAY" name={`${creditUnitLabel} Used`} fill="url(#barCredits)" radius={[4,4,0,0]} maxBarSize={40} />
-            <Bar yAxisId="right" dataKey="QUERY_COUNT"         name="Query Count"               fill="url(#barQueries)" radius={[4,4,0,0]} maxBarSize={40} />
+            {/* ✨ Only render the Financial Bar if the user has permission */}
+            {showFinancials && (
+              <Bar yAxisId="left" dataKey="TOTAL_SPEND_DISPLAY" name={`${creditUnitLabel} Used`} fill="url(#barCredits)" radius={[4,4,0,0]} maxBarSize={40} />
+            )}
+            <Bar yAxisId="right" dataKey="QUERY_COUNT" name="Query Count" fill="url(#barQueries)" radius={[4,4,0,0]} maxBarSize={40} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ✨ Wrap the entire secondary grid in the Access Matrix check */}
+      {showFinancials && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* 2. Credits by Warehouse — inline progress bars */}
-        <div className={`${chartCardClass} flex flex-col`}>
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-4">
-            {creditUnitLabel} by Warehouse
-          </h3>
+          {/* 2. Credits by Warehouse — inline progress bars */}
+          <div className={`${chartCardClass} flex flex-col`}>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-4">
+              {creditUnitLabel} by Warehouse
+            </h3>
 
-          {/* Light: soft slate inner bg | Dark: original slate-900/40 */}
-          <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md rounded-xl p-5 shadow-inner flex-1 flex flex-col justify-center">
-            <div className="space-y-4">
-              {topWarehouses.map((item, idx) => {
-                const val   = Number(item.TOTAL_CREDITS_USED || 0)
-                const pct   = Math.min(100, Math.max(0.5, (val / maxWhCredits) * 100))
-                const color = COLORS[idx % COLORS.length]
-                return (
-                  <div key={idx} className="group/item relative">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-transform group-hover/item:scale-125"
-                          style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}
-                        />
-                        {/* Light: dark text | Dark: original slate-200 */}
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">
-                          {item.WAREHOUSE_NAME}
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md rounded-xl p-5 shadow-inner flex-1 flex flex-col justify-center">
+              <div className="space-y-4">
+                {topWarehouses.map((item, idx) => {
+                  const val   = Number(item.TOTAL_CREDITS_USED || 0)
+                  const pct   = Math.min(100, Math.max(0.5, (val / maxWhCredits) * 100))
+                  const color = COLORS[idx % COLORS.length]
+                  return (
+                    <div key={idx} className="group/item relative">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-transform group-hover/item:scale-125"
+                            style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}
+                          />
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">
+                            {item.WAREHOUSE_NAME}
+                          </p>
+                        </div>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white flex-shrink-0">
+                          {formatCreditValue(val)}
                         </p>
                       </div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white flex-shrink-0">
-                        {formatCreditValue(val)}
-                      </p>
-                    </div>
 
-                    {/* Progress bar track — Light: slate-200 | Dark: original slate-800 */}
-                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/30 dark:border-slate-700/30">
-                      <div
-                        className="h-full rounded-full transition-all duration-1000 ease-out relative"
-                        style={{ width: `${pct}%`, backgroundColor: color }}
-                      >
-                        <div className="absolute inset-0 bg-white/20 w-full h-full opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300/30 dark:border-slate-700/30">
+                        <div
+                          className="h-full rounded-full transition-all duration-1000 ease-out relative"
+                          style={{ width: `${pct}%`, backgroundColor: color }}
+                        >
+                          <div className="absolute inset-0 bg-white/20 w-full h-full opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
+
+          {/* 3. Credits by Service Type */}
+          <div className={chartCardClass}>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-4">
+              {creditUnitLabel} by Service Type
+            </h3>
+
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                layout="vertical" 
+                data={(serviceCredits || []).slice(0, 10).map((row) => ({
+                  ...row,
+                  TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS),
+                }))}
+                margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+              >
+                <defs>
+                  <linearGradient id="colorServiceBarHorizontal" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="5%"  stopColor="#10b981" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} vertical={true} />
+
+                <XAxis
+                  type="number"
+                  stroke={axisStroke}
+                  axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
+                  tickLine={false}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
+                />
+
+                <YAxis
+                  type="category"
+                  dataKey="SERVICE_TYPE"
+                  stroke={axisStroke}
+                  axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
+                  tickLine={false}
+                  width={150}
+                  tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
+                  tickFormatter={(value) => {
+                    const cleanText = typeof value === 'string' ? value.replace(/_/g, ' ') : value;
+                    return cleanText.length > 22 ? `${cleanText.substring(0, 20)}...` : cleanText;
+                  }}
+                />
+
+                <Tooltip
+                  contentStyle={glassTooltipStyle}
+                  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+                  cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
+                  formatter={(value) => formatCreditValue(Number(value))}
+                />
+
+                <Bar 
+                  dataKey="TOTAL_SPEND_DISPLAY" 
+                  fill="url(#colorServiceBarHorizontal)" 
+                  radius={[0,4,4,0]} 
+                  name={`${creditUnitLabel} Used`} 
+                  barSize={24} 
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-
-{/* 3. Credits by Service Type */}
-        <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100 uppercase tracking-wider mb-4">
-            {creditUnitLabel} by Service Type
-          </h3>
-
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart
-              // ✨ FIX 1: Set layout to vertical
-              layout="vertical" 
-              data={(serviceCredits || []).slice(0, 10).map((row) => ({
-                ...row,
-                TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS),
-              }))}
-              margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
-            >
-              <defs>
-                {/* ✨ FIX 2: Adjusted gradient to flow left-to-right instead of top-to-bottom */}
-                <linearGradient id="colorServiceBarHorizontal" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
-                </linearGradient>
-              </defs>
-
-              {/* ✨ FIX 3: Only show vertical grid lines */}
-              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} vertical={true} />
-
-              {/* ✨ FIX 4: XAxis is now the numbers (credits/USD) */}
-              <XAxis
-                type="number"
-                stroke={axisStroke}
-                axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                tickLine={false}
-                tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
-              />
-
-              {/* ✨ FIX 5: YAxis is now the Service Types, with plenty of room (width={150}) */}
-            <YAxis
-                type="category"
-                dataKey="SERVICE_TYPE"
-                stroke={axisStroke}
-                axisLine={{ stroke: axisStrokeStrong, strokeWidth: 1.5 }}
-                tickLine={false}
-                width={150}
-                // ✨ FIX: Change the 'fill' to pure white in dark mode and pure black in light mode
-                tick={{ fill: isDark ? '#ffffff' : '#000000', fontSize: 10, fontWeight: 600 }}
-                tickFormatter={(value) => {
-                  const cleanText = typeof value === 'string' ? value.replace(/_/g, ' ') : value;
-                  return cleanText.length > 22 ? `${cleanText.substring(0, 20)}...` : cleanText;
-                }}
-              />
-
-              <Tooltip
-                contentStyle={glassTooltipStyle}
-                itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
-                cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
-                formatter={(value) => formatCreditValue(Number(value))}
-              />
-
-              {/* ✨ FIX 6: Adjust the radius to round the right-side corners instead of the top ones */}
-              <Bar 
-                dataKey="TOTAL_SPEND_DISPLAY" 
-                fill="url(#colorServiceBarHorizontal)" 
-                radius={[0,4,4,0]} 
-                name={`${creditUnitLabel} Used`} 
-                barSize={24} 
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

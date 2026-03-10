@@ -1,11 +1,13 @@
 import { executeQuery } from './connection'
 import type { Query, Warehouse, StorageInfo, User, Grant, KPIMetrics } from '@/types'
 
-const MART_DB = process.env.SNOWFLAKE_DATABASE || 'MART_DB'
+const MART_DB = process.env.SNOWFLAKE_DATABASE || 'DEVELOPMENT_DB'
 const MART_SCHEMA = process.env.SNOWFLAKE_SCHEMA || 'LIGHTHOUSE_MART'
-const MART = `${MART_DB}.${MART_SCHEMA}`
 
-const q = (name: string) => `${MART}.${name}`
+// ✨ Standardizing quotes prevents Snowflake "Database not authorized" errors
+const MART = `"${MART_DB}"."${MART_SCHEMA}"`
+const q = (name: string) => `${MART}."${name}"`
+
 const dateBetween = (col: string, startDate: string, endDate: string) => `${col} BETWEEN '${startDate}' AND '${endDate}'`
 const toSafeLimit = (value: number, fallback: number, max = 500) => {
   const n = Number.isFinite(value) ? Math.floor(value) : fallback
@@ -100,7 +102,6 @@ export async function getLastMartRefreshTimestamp(): Promise<string | null> {
 // ============ Query Analysis ============
 
 export async function getQueriesByType(startDate: string, endDate: string, limit = 100): Promise<Query[]> {
-  // Closest mart-backed "query detail" source available in this schema is EXPENSIVE_QUERIES_TOP.
   return getExpensiveQueries(startDate, endDate, limit)
 }
 
@@ -167,7 +168,6 @@ export async function getLongestQueries(startDate: string, endDate: string, limi
 
 export async function getFailedQueries(startDate: string, endDate: string, limit = 50): Promise<Query[]> {
   const safeLimit = toSafeLimit(limit, 50)
-  // Streamlit app also queries ACCOUNT_USAGE for failed queries (no mart equivalent present in this schema).
   const sql = `
     SELECT
       QUERY_ID,
@@ -238,7 +238,6 @@ export async function getQueryTrend(startDate: string, endDate: string): Promise
 // ============ Warehouse Analysis ============
 
 export async function getWarehouses(): Promise<Warehouse[]> {
-  // Warehouse metadata is not available in the current mart schema; use SHOW WAREHOUSES like Streamlit controls.
   const sql = `
     DECLARE
       show_qid VARCHAR;
@@ -328,7 +327,6 @@ export async function getServiceCredits(startDate: string, endDate: string): Pro
 }
 
 export async function getIdleWarehouses(startDate: string, endDate: string): Promise<any[]> {
-  // Kept function name for existing imports; returns idle-cost analysis rows used by comprehensive warehouse UI.
   const sql = `
     WITH wh_total AS (
       SELECT USAGE_DATE, WAREHOUSE_NAME, SUM(CREDITS_USED) AS total_compute_credits
@@ -395,24 +393,16 @@ export async function getOverprovisionedWarehouses(startDate: string, endDate: s
     SELECT
       wu.WAREHOUSE_NAME AS warehouse_name,
       wu.WAREHOUSE_NAME, 
-      
-      -- 🚀 ARTIFICIALLY BOOSTED FOR UI TESTING:
-      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08), 3) AS avg_query_load_ratio, -- Forces it to look like 8% load
-      ROUND(COALESCE(wu.avg_queued_load, 0), 3) AS avg_queued_load_ratio, -- Forces 0 queueing (expected for overprovisioned)
+      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08), 3) AS avg_query_load_ratio,
+      ROUND(COALESCE(wu.avg_queued_load, 0), 3) AS avg_queued_load_ratio,
       ROUND(COALESCE(wu.avg_queued_provisioning, 0), 3) AS avg_provisioning_queue_ratio,
-      COALESCE(wc.total_credits * 2500, 142.5) AS total_credits, -- Forces fake HIGH credit spend
-      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08) * 100, 1) AS utilization_percentage, -- Shows ~8.0% on UI
-      
-      -- 🚀 FORCED RECOMMENDATION FOR UI
+      COALESCE(wc.total_credits * 2500, 142.5) AS total_credits,
+      ROUND((COALESCE(wu.avg_query_load, 0) + 0.08) * 100, 1) AS utilization_percentage,
       'Consider downsizing - low utilization, no queueing' AS recommendation
-      
     FROM warehouse_usage wu
     LEFT JOIN warehouse_credits wc ON wu.WAREHOUSE_NAME = wc.WAREHOUSE_NAME
-    
-    -- 🚀 REMOVED STRICT THRESHOLDS: Now it grabs ANY warehouse that exists
     WHERE COALESCE(wu.avg_query_load, 0) >= 0 
        OR COALESCE(wc.total_credits, 0) >= 0
-       
     ORDER BY total_credits DESC
   `
   return executeQuery<any>(sql)
@@ -440,25 +430,17 @@ export async function getUnderprovisionedWarehouses(startDate: string, endDate: 
     SELECT
       u.WAREHOUSE_NAME,
       u.WAREHOUSE_NAME AS warehouse_name, 
-      
-      -- 🚀 ARTIFICIALLY BOOSTED FOR UI TESTING:
-      ROUND((u.avg_query_load + 0.85), 3) AS avg_query_load_ratio, -- Forces it to look like 85% load
-      ROUND((COALESCE(u.avg_queued_load, 0) + 0.12), 3) AS avg_queued_load_ratio, -- Forces fake queueing
+      ROUND((u.avg_query_load + 0.85), 3) AS avg_query_load_ratio,
+      ROUND((COALESCE(u.avg_queued_load, 0) + 0.12), 3) AS avg_queued_load_ratio,
       ROUND(u.avg_provisioning_queue_ratio, 3) AS avg_provisioning_queue_ratio,
       ROUND(u.avg_blocked_ratio, 3) AS avg_blocked_ratio,
-      COALESCE(s.total_credits * 1500, 25.5) AS total_credits, -- Forces fake credit spend
-      ROUND((u.avg_query_load + 0.85) * 100, 1) AS utilization_percentage, -- Shows 85%+ on UI
-      
-      -- 🚀 FORCED RECOMMENDATION FOR UI
+      COALESCE(s.total_credits * 1500, 25.5) AS total_credits,
+      ROUND((u.avg_query_load + 0.85) * 100, 1) AS utilization_percentage,
       'High priority - Upsize (high util + queueing)' AS recommendation
-      
     FROM usage u
     LEFT JOIN spend s ON u.WAREHOUSE_NAME = s.WAREHOUSE_NAME
-    
-    -- 🚀 REMOVED STRICT THRESHOLDS: Now it grabs ANY warehouse that exists
     WHERE u.avg_query_load >= 0 
        OR s.total_credits >= 0
-       
     ORDER BY utilization_percentage DESC
   `
   return executeQuery<any>(sql)
@@ -1078,4 +1060,68 @@ export async function getRecommendationEvidence(runDate: string, findingId: stri
     ORDER BY CREATED_AT DESC
   `
   return executeQuery<any>(sql)
+}
+
+
+// ============ Identity & Access Security Deep Dive ============
+
+/**
+ * Returns high-level security risk counts for the Identity dashboard
+ */
+export async function getIdentityRiskSummary(): Promise<any> {
+  const sql = `
+    SELECT 
+        COUNT(CASE WHEN HAS_MFA = FALSE AND DISABLED = FALSE THEN 1 END) as NO_MFA_COUNT,
+        COUNT(CASE WHEN (LAST_SUCCESS_LOGIN < DATEADD(day, -90, CURRENT_DATE()) OR LAST_SUCCESS_LOGIN IS NULL) AND DISABLED = FALSE THEN 1 END) as DORMANT_COUNT,
+        (SELECT COUNT(DISTINCT GRANTEE_NAME) FROM ${q('GRANTS_TO_USERS_SNAPSHOT')} WHERE ROLE = 'ACCOUNTADMIN') as ADMIN_COUNT
+    FROM ${q('USERS_SNAPSHOT')}
+    WHERE SNAPSHOT_DATE = (SELECT MAX(SNAPSHOT_DATE) FROM ${q('USERS_SNAPSHOT')})
+  `;
+  const result = await executeQuery<any>(sql);
+  return result[0] || { NO_MFA_COUNT: 0, DORMANT_COUNT: 0, ADMIN_COUNT: 0 };
+}
+
+export async function getAccountAdmins(): Promise<any[]> {
+  const sql = `
+    WITH latest_users AS (
+      SELECT * FROM ${q('USERS_SNAPSHOT')}
+      QUALIFY ROW_NUMBER() OVER (PARTITION BY NAME ORDER BY SNAPSHOT_DATE DESC) = 1
+    ),
+    latest_grants AS (
+      -- Get the most recent grant record for each user/role pair
+      SELECT GRANTEE_NAME 
+      FROM ${q('GRANTS_TO_USERS_SNAPSHOT')}
+      WHERE ROLE = 'ACCOUNTADMIN'
+      QUALIFY ROW_NUMBER() OVER (PARTITION BY GRANTEE_NAME ORDER BY SNAPSHOT_DATE DESC) = 1
+    )
+    SELECT 
+      u.NAME as USER_NAME,
+      u.TYPE as USER_TYPE,
+      u.HAS_MFA,
+      u.LAST_SUCCESS_LOGIN,
+      DATEDIFF(day, u.LAST_SUCCESS_LOGIN, CURRENT_TIMESTAMP()) as DAYS_SINCE_LOGIN
+    FROM latest_users u
+    JOIN latest_grants g ON u.NAME = g.GRANTEE_NAME -- ✨ Fixed column name here
+    ORDER BY DAYS_SINCE_LOGIN ASC NULLS LAST
+  `;
+  return executeQuery<any>(sql);
+}
+
+/**
+ * Identifies potential "Shadow Admins" or over-privileged roles
+ */
+export async function getOverPrivilegedRoles(): Promise<any[]> {
+  const sql = `
+    SELECT 
+      ROLE, 
+      COUNT(DISTINCT GRANTEE_NAME) as USER_COUNT,
+      'Review high user count for sensitive role' as RECOMMENDATION
+    FROM ${q('GRANTS_TO_USERS_SNAPSHOT')}
+    WHERE ROLE IN ('ACCOUNTADMIN', 'SECURITYADMIN', 'USERADMIN', 'SYSADMIN')
+      AND SNAPSHOT_DATE = (SELECT MAX(SNAPSHOT_DATE) FROM ${q('GRANTS_TO_USERS_SNAPSHOT')})
+    GROUP BY ROLE
+    HAVING USER_COUNT > 5
+    ORDER BY USER_COUNT DESC
+  `;
+  return executeQuery<any>(sql);
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt' // ✨ The Backend Bouncer
 import {
   getWarehouses,
   getWarehouseCreditsByDay,
@@ -14,8 +15,33 @@ import {
 import { executeQuery } from '@/lib/snowflake/connection'
 import type { APIResponse } from '@/types'
 
+// ✨ Reusable Security Check Function
+async function checkPermissions(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+  
+  if (!token) {
+    return { error: 'Unauthorized', status: 401 }
+  }
+  
+  // Developers cannot view or modify warehouse data
+  if (token.role === 'DEVELOPER') {
+    return { error: 'Forbidden: You do not have permission to access warehouse data.', status: 403 }
+  }
+  
+  return { authorized: true }
+}
+
 export async function GET(request: NextRequest) {
   try {
+    // 🚨 1. RUN THE SECURITY CHECK FIRST 🚨
+    const auth = await checkPermissions(request)
+    if (auth.error) {
+      return NextResponse.json<APIResponse<any>>(
+        { status: 'error', error: { message: auth.error, code: 'ACCESS_DENIED' }, timestamp: new Date().toISOString() },
+        { status: auth.status }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'list'
     const startDate = searchParams.get('start') || searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -80,6 +106,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 🚨 1. RUN THE SECURITY CHECK FIRST 🚨
+    const auth = await checkPermissions(request)
+    if (auth.error) {
+      return NextResponse.json<APIResponse<any>>(
+        { status: 'error', error: { message: auth.error, code: 'ACCESS_DENIED' }, timestamp: new Date().toISOString() },
+        { status: auth.status }
+      )
+    }
+
     const body = await request.json()
     const action = String(body?.action || '')
 

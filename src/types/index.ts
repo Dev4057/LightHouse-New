@@ -368,7 +368,7 @@ export interface RecommendationDetail extends Recommendation {
 // ============================================
 
 export interface KPIMetrics {
-  TOTAL_CREDITS_USED: number
+  TOTAL_CREDITS_USED: number|null
   TOTAL_QUERIES_EXECUTED: number
   AVERAGE_QUERY_TIME: number
   FAILED_QUERY_COUNT: number
