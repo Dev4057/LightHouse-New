@@ -30,14 +30,6 @@ const EmptyState = ({ icon: Icon, title, desc }: { icon: any; title: string; des
   </div>
 )
 
-const SkeletonCard = ({ className = '' }: { className?: string }) => (
-  <Card className={`bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700/60 p-6 ${className}`}>
-    <div className="h-4 w-1/3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-2" />
-    <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-6" />
-    <div className="h-64 w-full bg-slate-200/50 dark:bg-slate-800/50 rounded animate-pulse" />
-  </Card>
-)
-
 const TableScroll = ({ children, maxHeight }: { children: React.ReactNode; maxHeight?: string }) => (
   <div
     className="w-full min-w-0 max-w-full overflow-x-auto"
@@ -50,7 +42,6 @@ const TableScroll = ({ children, maxHeight }: { children: React.ReactNode; maxHe
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPageProps) {
-  // ✅ ALL hooks must be inside the component function
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
@@ -59,15 +50,27 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
   const startDate = dateRange.start.toISOString().split('T')[0]
   const endDate = dateRange.end.toISOString().split('T')[0]
 
-  const { data: whCredits, isLoading: loadingCredits } = useFetch<WarehouseCredit[]>(['wh-credits', startDate, endDate], `/api/warehouses?type=credits&start=${startDate}&end=${endDate}`)
-  const { data: services, isLoading: loadingServices } = useFetch<ServiceCredit[]>(['service-credits', startDate, endDate], `/api/warehouses?type=services&start=${startDate}&end=${endDate}`)
-  const { data: idle, isLoading: loadingIdle } = useFetch<IdleCost[]>(['idle-cost', startDate, endDate], `/api/warehouses?type=idle&start=${startDate}&end=${endDate}`)
-  const { data: overprov, isLoading: loadingOverprov } = useFetch<OverprovisionedWH[]>(['overprovisioned', startDate, endDate], `/api/warehouses?type=overprovisioned&start=${startDate}&end=${endDate}`)
-  const { data: underprov, isLoading: loadingUnderprov } = useFetch<UnderprovisionedWH[]>(['underprovisioned', startDate, endDate], `/api/warehouses?type=underprovisioned&start=${startDate}&end=${endDate}`)
-  const { data: byUser, isLoading: loadingByUser } = useFetch<WarehouseUser[]>(['warehouse-user-credits', startDate, endDate], `/api/warehouses?type=by_user&start=${startDate}&end=${endDate}`)
-  const { data: dormant, isLoading: loadingDormant } = useFetch<DormantWarehouse[]>(['dormant-warehouses', startDate, endDate], `/api/warehouses?type=dormant&start=${startDate}&end=${endDate}`)
-  const { data: mixed, isLoading: loadingMixed } = useFetch<MixedWorkload[]>(['mixed-workloads', startDate, endDate], `/api/warehouses?type=mixed&start=${startDate}&end=${endDate}`)
-  const { data: warehouseList, error: warehouseListError, refetch: refetchWarehouseList } = useFetch<Warehouse[]>(['warehouse-list-controls'], '/api/warehouses?type=list')
+  // ✨ FIX: Grab the raw response from useFetch
+  const { data: rawWhCredits, isLoading: loadingCredits } = useFetch<any>(['wh-credits', startDate, endDate], `/api/warehouses?type=credits&start=${startDate}&end=${endDate}`)
+  const { data: rawServices, isLoading: loadingServices } = useFetch<any>(['service-credits', startDate, endDate], `/api/warehouses?type=services&start=${startDate}&end=${endDate}`)
+  const { data: rawIdle, isLoading: loadingIdle } = useFetch<any>(['idle-cost', startDate, endDate], `/api/warehouses?type=idle&start=${startDate}&end=${endDate}`)
+  const { data: rawOverprov, isLoading: loadingOverprov } = useFetch<any>(['overprovisioned', startDate, endDate], `/api/warehouses?type=overprovisioned&start=${startDate}&end=${endDate}`)
+  const { data: rawUnderprov, isLoading: loadingUnderprov } = useFetch<any>(['underprovisioned', startDate, endDate], `/api/warehouses?type=underprovisioned&start=${startDate}&end=${endDate}`)
+  const { data: rawByUser, isLoading: loadingByUser } = useFetch<any>(['warehouse-user-credits', startDate, endDate], `/api/warehouses?type=by_user&start=${startDate}&end=${endDate}`)
+  const { data: rawDormant, isLoading: loadingDormant } = useFetch<any>(['dormant-warehouses', startDate, endDate], `/api/warehouses?type=dormant&start=${startDate}&end=${endDate}`)
+  const { data: rawMixed, isLoading: loadingMixed } = useFetch<any>(['mixed-workloads', startDate, endDate], `/api/warehouses?type=mixed&start=${startDate}&end=${endDate}`)
+  const { data: rawWarehouseList, error: warehouseListError, refetch: refetchWarehouseList } = useFetch<any>(['warehouse-list-controls'], '/api/warehouses?type=list')
+
+  // ✨ FIX: Safely extract arrays from either nested .data or flat responses
+  const whCredits = useMemo(() => rawWhCredits?.data || (Array.isArray(rawWhCredits) ? rawWhCredits : []), [rawWhCredits])
+  const services = useMemo(() => rawServices?.data || (Array.isArray(rawServices) ? rawServices : []), [rawServices])
+  const idle = useMemo(() => rawIdle?.data || (Array.isArray(rawIdle) ? rawIdle : []), [rawIdle])
+  const overprov = useMemo(() => rawOverprov?.data || (Array.isArray(rawOverprov) ? rawOverprov : []), [rawOverprov])
+  const underprov = useMemo(() => rawUnderprov?.data || (Array.isArray(rawUnderprov) ? rawUnderprov : []), [rawUnderprov])
+  const byUser = useMemo(() => rawByUser?.data || (Array.isArray(rawByUser) ? rawByUser : []), [rawByUser])
+  const dormant = useMemo(() => rawDormant?.data || (Array.isArray(rawDormant) ? rawDormant : []), [rawDormant])
+  const mixed = useMemo(() => rawMixed?.data || (Array.isArray(rawMixed) ? rawMixed : []), [rawMixed])
+  const warehouseList = useMemo(() => rawWarehouseList?.data || (Array.isArray(rawWarehouseList) ? rawWarehouseList : []), [rawWarehouseList])
 
   const isLoading = loadingCredits || loadingServices || loadingIdle || loadingOverprov || loadingUnderprov || loadingByUser || loadingDormant || loadingMixed
   const hasData = !!(whCredits?.length || services?.length || idle?.length)
@@ -78,7 +81,6 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
   const [warehouseControlMessage, setWarehouseControlMessage] = useState<string | null>(null)
   const { isUsd, creditUnitLabel, convertCredits, formatCreditValue } = useSpendDisplay()
 
-  // ✅ Theme-aware chart styles — defined INSIDE the component so they react to theme
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
   const axisColor = isDark ? '#64748b' : '#94a3b8'
 
@@ -95,25 +97,25 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
   const n = (value: unknown) => { const p = Number(value); return Number.isFinite(p) ? p : 0 }
   const firstRecommendationPart = (value: unknown) => String(value || '').split(' - ')[0] || '-'
 
-  const idleRows = useMemo(() => (idle ?? []).map((row) => ({
+  const idleRows = useMemo(() => (idle ?? []).map((row: any) => ({
     ...row,
-    WAREHOUSE_NAME: (row as any).WAREHOUSE_NAME ?? (row as any).warehouse_name ?? '',
-    total_compute_credits: (row as any).total_compute_credits ?? (row as any).TOTAL_COMPUTE_CREDITS,
-    query_execution_credits: (row as any).query_execution_credits ?? (row as any).QUERY_EXECUTION_CREDITS,
-    idle_credits: (row as any).idle_credits ?? (row as any).IDLE_CREDITS,
-    idle_percentage: (row as any).idle_percentage ?? (row as any).IDLE_PERCENTAGE,
-    estimated_idle_cost_usd: (row as any).estimated_idle_cost_usd ?? (row as any).ESTIMATED_IDLE_COST_USD,
-    recommendation: (row as any).recommendation ?? (row as any).RECOMMENDATION,
+    WAREHOUSE_NAME: row.WAREHOUSE_NAME ?? row.warehouse_name ?? '',
+    total_compute_credits: row.total_compute_credits ?? row.TOTAL_COMPUTE_CREDITS,
+    query_execution_credits: row.query_execution_credits ?? row.QUERY_EXECUTION_CREDITS,
+    idle_credits: row.idle_credits ?? row.IDLE_CREDITS,
+    idle_percentage: row.idle_percentage ?? row.IDLE_PERCENTAGE,
+    estimated_idle_cost_usd: row.estimated_idle_cost_usd ?? row.ESTIMATED_IDLE_COST_USD,
+    recommendation: row.recommendation ?? row.RECOMMENDATION,
   })), [idle])
 
   const maxIdleCredits = useMemo(() => {
     if (!idleRows.length) return 1
-    return Math.max(...idleRows.map(r => n(r.idle_credits)))
+    return Math.max(...idleRows.map((r: any) => n(r.idle_credits)))
   }, [idleRows])
 
   const maxUserCredits = useMemo(() => {
     if (!byUser?.length) return 1
-    return Math.max(...byUser.map(u => n(u.CREDITS)))
+    return Math.max(...byUser.map((u: any) => n(u.CREDITS)))
   }, [byUser])
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
     }
   }
 
-if (isLoading || !mounted) {
+  if (isLoading || !mounted) {
     return <LighthouseLoader />
   }
 
@@ -171,7 +173,6 @@ if (isLoading || !mounted) {
     )
   }
 
-  // ✅ Theme-aware card/table classes
   const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden w-full min-w-0 flex flex-col transition-all duration-300"
   const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
   const tdClass = "py-3 px-4 text-xs"
@@ -203,7 +204,7 @@ if (isLoading || !mounted) {
                 <div className="w-full overflow-hidden" style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                      data={whCredits.map((row) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS_USED) }))}
+                      data={whCredits.map((row: any) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS_USED) }))}
                       margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                     >
                       <defs>
@@ -230,12 +231,12 @@ if (isLoading || !mounted) {
                         width={60}
                         label={{ value: creditUnitLabel, angle: -90, position: 'insideLeft', offset: 15, fill: axisColor, fontSize: 11, fontWeight: 600 }}
                       />
-<Tooltip 
-  contentStyle={glassTooltipStyle} 
-  formatter={(v) => formatCreditValue(v as number)} 
-  // ✨ ADD THIS LINE to control the text color:
-  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
-/>                      <Bar dataKey="TOTAL_SPEND_DISPLAY" fill="url(#whGrad)" radius={[2, 2, 0, 0]} maxBarSize={40} />
+                      <Tooltip 
+                        contentStyle={glassTooltipStyle} 
+                        formatter={(v) => formatCreditValue(v as number)} 
+                        itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+                      />
+                      <Bar dataKey="TOTAL_SPEND_DISPLAY" fill="url(#whGrad)" radius={[2, 2, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -286,7 +287,7 @@ if (isLoading || !mounted) {
                         </linearGradient>
                       </defs>
                       <Pie
-                        data={services.map((row) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS) }))}
+                        data={services.map((row: any) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS) }))}
                         dataKey="TOTAL_SPEND_DISPLAY"
                         nameKey="SERVICE_TYPE"
                         cx="50%"
@@ -296,7 +297,7 @@ if (isLoading || !mounted) {
                         paddingAngle={3}
                         stroke="none"
                       >
-                        {services.map((_, index) => (
+                        {services.map((_: any, index: number) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={`url(#pieGrad${index % 5})`}
@@ -305,12 +306,12 @@ if (isLoading || !mounted) {
                           />
                         ))}
                       </Pie>
-<Tooltip 
-  contentStyle={glassTooltipStyle} 
-  formatter={(v) => formatCreditValue(v as number)} 
-  // ✨ ADD THIS LINE to control the text color:
-  itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
-/>                        <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
+                      <Tooltip 
+                        contentStyle={glassTooltipStyle} 
+                        formatter={(v) => formatCreditValue(v as number)} 
+                        itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -354,7 +355,7 @@ if (isLoading || !mounted) {
                     </tr>
                   </thead>
                   <tbody>
-                    {idleRows.map((w, i) => {
+                    {idleRows.map((w: any, i: number) => {
                       const costPct = Math.min(100, Math.max(2, (n(w.idle_credits) / maxIdleCredits) * 100))
                       return (
                         <tr key={i} className={trClass}>
@@ -417,7 +418,7 @@ if (isLoading || !mounted) {
                       </tr>
                     </thead>
                     <tbody>
-                      {overprov.map((w, i) => (
+                      {overprov.map((w: any, i: number) => (
                         <tr key={i} className={trClass}>
                           <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                           <td className={tdClass}><span className="text-[11px] font-medium text-slate-700 dark:text-slate-200 truncate block max-w-[120px]">{w.warehouse_name}</span></td>
@@ -462,7 +463,7 @@ if (isLoading || !mounted) {
                       </tr>
                     </thead>
                     <tbody>
-                      {underprov.map((w, i) => (
+                      {underprov.map((w: any, i: number) => (
                         <tr key={i} className={trClass}>
                           <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
                           <td className={tdClass}><span className="text-[11px] font-medium text-slate-700 dark:text-slate-200 truncate block max-w-[120px]">{w.WAREHOUSE_NAME}</span></td>
@@ -514,7 +515,7 @@ if (isLoading || !mounted) {
                       </tr>
                     </thead>
                     <tbody>
-                      {byUser.slice(0, 25).map((row, i) => {
+                      {byUser.slice(0, 25).map((row: any, i: number) => {
                         const costPct = Math.min(100, Math.max(2, (n(row.CREDITS) / maxUserCredits) * 100))
                         return (
                           <tr key={i} className={trClass}>
@@ -564,7 +565,7 @@ if (isLoading || !mounted) {
                         </tr>
                       </thead>
                       <tbody>
-                        {dormant.map((w, i) => (
+                        {dormant.map((w: any, i: number) => (
                           <tr key={i} className={trClass}>
                             <td className={tdClass}><span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate block max-w-[140px]">{w.WAREHOUSE_NAME}</span></td>
                             <td className={`${tdClass} text-right text-slate-500 dark:text-slate-400 whitespace-nowrap`}>{formatCreditValue(w.total_credit)}</td>
@@ -603,7 +604,7 @@ if (isLoading || !mounted) {
                         </tr>
                       </thead>
                       <tbody>
-                        {mixed.map((w, i) => (
+                        {mixed.map((w: any, i: number) => (
                           <tr key={i} className={trClass}>
                             <td className={tdClass}><span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate block max-w-[130px]">{w.WAREHOUSE_NAME}</span></td>
                             <td className={`${tdClass} text-right text-slate-500 dark:text-slate-400 whitespace-nowrap`}>{formatNumber(w.SMALL_QUERIES)}</td>
@@ -666,7 +667,7 @@ if (isLoading || !mounted) {
                     </tr>
                   </thead>
                   <tbody>
-                    {warehouseList.slice(0, 30).map((wh, i) => {
+                    {warehouseList.slice(0, 30).map((wh: any, i: number) => {
                       const draft = warehouseControls[wh.WAREHOUSE_NAME] || {
                         autoSuspend: wh.AUTO_SUSPEND ? String(wh.AUTO_SUSPEND) : '',
                         autoResume: Boolean(wh.AUTO_RESUME),

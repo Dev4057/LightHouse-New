@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useFetch from '@/hooks/useApi'
+import IdentityReviewPanel from '@/components/identity/IdentityReviewPanel'
 
 export default function IdentityPage() {
   const { data: session, status } = useSession()
@@ -27,7 +28,7 @@ export default function IdentityPage() {
   const { data: summaryRes, isLoading: loadingSummary } = useFetch<any>(['id-summary'], '/api/identity?type=summary')
   const { data: adminsRes, isLoading: loadingAdmins } = useFetch<any>(['id-admins'], '/api/identity?type=admins')
   const { data: usersRes, isLoading: loadingUsers } = useFetch<any>(['id-users'], '/api/identity?type=users')
-
+  const [selectedUser, setSelectedUser] = useState<any>(null)
   // 🛡️ RBAC Bouncer
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role === 'DEVELOPER') {
@@ -201,9 +202,12 @@ export default function IdentityPage() {
                           {user.LAST_SUCCESS_LOGIN ? new Date(user.LAST_SUCCESS_LOGIN).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium transition-colors">
-                            Review
-                          </button>
+                      <button 
+                        onClick={() => setSelectedUser(user)} // 👈 Click sets the user
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-lg text-xs font-bold transition-all"
+                      >
+                        Review
+                      </button>
                         </td>
                       </tr>
                     )
@@ -222,6 +226,13 @@ export default function IdentityPage() {
           </div>
         </div>
       </div>
+    {selectedUser && (
+        <IdentityReviewPanel 
+          user={selectedUser} 
+          onClose={() => setSelectedUser(null)} 
+          onRefresh={() => window.location.reload()} 
+        />
+      )}
     </DashboardLayout>
   )
 }

@@ -27,7 +27,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
   const usdPerCredit = useDisplaySettingsStore((s) => s.usdPerCredit)
   const setSpendDisplayMode = useDisplaySettingsStore((s) => s.setSpendDisplayMode)
   const setUsdPerCredit = useDisplaySettingsStore((s) => s.setUsdPerCredit)
-  
+  const [readIds, setReadIds] = useState<string[]>([])
   const { data: notifications, isLoading: notificationsLoading, isError: notificationsError } = useNotifications()
   const [usdRateDraft, setUsdRateDraft] = useState(String(usdPerCredit || DEFAULT_USD_PER_CREDIT))
   
@@ -36,6 +36,27 @@ export default function Header({ onMenuClick, isSidebarOpen }: { onMenuClick: ()
     '/api/system?type=last_refresh',
     { staleTime: 60_000, gcTime: 5 * 60_000 }
   )
+
+  // Load previously read notifications from local storage when the header mounts
+  useEffect(() => {
+    const stored = localStorage.getItem('lighthouse_read_notifications')
+    if (stored) {
+      try { setReadIds(JSON.parse(stored)) } catch (e) {}
+    }
+  }, [])
+
+  // Calculate how many notifications are actually unread
+  const unreadCount = notifications 
+    ? notifications.filter((n: any) => !readIds.includes(n.id) && n.id !== 'all-clear').length 
+    : 0
+
+  // The function to trigger when "Mark as read" is clicked
+  const markAllAsRead = () => {
+    if (!notifications) return
+    const allIds = notifications.map((n: any) => n.id)
+    setReadIds(allIds)
+    localStorage.setItem('lighthouse_read_notifications', JSON.stringify(allIds))
+  }
 
 
   // ✨ Dynamic User Info from NextAuth Session!
@@ -127,40 +148,66 @@ return (
               }}
               className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded-lg transition-colors group"
             >
-              <Bell className="w-5 h-5 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
-            </button>
+<Bell className="w-5 h-5 text-slate-500 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+  {/* ✨ FIX: Only show the red dot if there are unread notifications */}
+  {unreadCount > 0 && (
+    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+  )}
+</button>
 
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-900 dark:text-white">Notifications</h3>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                  >
-                    <X className="w-4 h-4 text-slate-400 hover:text-slate-900 dark:hover:text-white" />
-                  </button>
-                </div>
+<div className="p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
+  <div className="flex items-center gap-2">
+    <h3 className="font-semibold text-slate-900 dark:text-white">Notifications</h3>
+    {unreadCount > 0 && (
+      <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+        {unreadCount} New
+      </span>
+    )}
+  </div>
+  <div className="flex items-center gap-3">
+    {unreadCount > 0 && (
+      <button 
+        onClick={markAllAsRead}
+        className="text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+      >
+        Mark all as read
+      </button>
+    )}
+    <button
+      onClick={() => setShowNotifications(false)}
+      className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+    >
+      <X className="w-4 h-4 text-slate-400 hover:text-slate-900 dark:hover:text-white" />
+    </button>
+  </div>
+</div>
                 <div className="p-4 space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
                   {notificationsLoading ? (
                     <div className="text-xs text-slate-500 dark:text-slate-400">Loading...</div>
                   ) : notificationsError ? (
                     <div className="text-xs text-red-500 dark:text-red-400">Failed to load notifications</div>
                   ) : notifications && notifications.length ? (
-                    notifications.map((n) => (
+notifications.map((n: any) => (
                       <div
                         key={n.id}
-                        className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className={`p-3 rounded-lg border transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                          readIds.includes(n.id)
+                            ? 'bg-transparent border-transparent opacity-50' // Visually dimmed for read items
+                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/30 shadow-sm' // Highlighted for unread
+                        }`}
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 shadow-sm dark:shadow-lg ${
+                            className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 transition-colors ${
+                              // Optional: You could also make the dot gray if it's read! 
+                              // But for now, we'll keep the colors and just let the parent opacity dim it.
                               n.level === 'error'
-                                ? 'bg-red-500 dark:shadow-red-500/50'
+                                ? 'bg-red-500 shadow-sm dark:shadow-[0_0_8px_rgba(239,68,68,0.5)]'
                                 : n.level === 'warning'
-                                ? 'bg-amber-500 dark:shadow-amber-500/50'
-                                : 'bg-blue-500 dark:shadow-blue-500/50'
+                                ? 'bg-amber-500 shadow-sm dark:shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+                                : 'bg-blue-500 shadow-sm dark:shadow-[0_0_8px_rgba(59,130,246,0.5)]'
                             }`}
                           ></div>
                           <div className="flex-1 min-w-0">
@@ -176,8 +223,16 @@ return (
                   )}
                 </div>
                 <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 text-center bg-slate-50 dark:bg-slate-800/20 rounded-b-xl">
-                  <button className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">View all notifications</button>
-                </div>
+  <button 
+    onClick={() => {
+      setShowNotifications(false) // Close the dropdown menu
+      router.push('/recommendations') // 👈 Change this to '/notifications' if you want to build a new page!
+    }}
+    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors w-full h-full"
+  >
+    View all notifications
+  </button>
+</div>
               </div>
             )}
           </div>

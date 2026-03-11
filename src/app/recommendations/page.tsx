@@ -73,7 +73,7 @@ export default function RecommendationsPage() {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">AI Recommendations</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Recommendations</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
               Automated insights to optimize Snowflake costs, performance, and security. Review and apply configurations.
             </p>
