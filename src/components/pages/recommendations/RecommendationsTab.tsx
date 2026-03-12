@@ -7,6 +7,7 @@ import { Loader, AlertCircle } from 'lucide-react'
 import { formatBytes, formatNumber } from '@/lib/formatting'
 import { useSpendDisplay } from '@/hooks/useSpendDisplay'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
+import InfoTooltip from '@/components/ui/InfoTooltip' // ✨ Imported Tooltip
 
 const RECOMMENDATION_STATUS_OPTIONS = ['open', 'in_progress', 'accepted', 'done', 'snoozed', 'dismissed'] as const
 
@@ -131,7 +132,10 @@ export default function RecommendationsTab({ dateRange }: { dateRange: { start: 
 
       <Card className="bg-slate-900 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Filters</CardTitle>
+            <InfoTooltip text="Narrow down the recommendations by specific categories or adjust the priority slider to focus only on high-impact issues." />
+          </div>
           <CardDescription>Match Streamlit recommendation window and status/category filtering</CardDescription>
         </CardHeader>
         <CardContent>
@@ -154,7 +158,10 @@ export default function RecommendationsTab({ dateRange }: { dateRange: { start: 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card className="bg-slate-900 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-base">Top Recommendations</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">Top Recommendations</CardTitle>
+              <InfoTooltip text="AI-generated actions to optimize your Snowflake cost, performance, and security. They are ranked by priority. Click any row to see the exact evidence and fix." />
+            </div>
             <CardDescription>{filtered.length} rows</CardDescription>
           </CardHeader>
           <CardContent>
@@ -189,7 +196,10 @@ export default function RecommendationsTab({ dateRange }: { dateRange: { start: 
 
         <Card className="bg-slate-900 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-base">Recommendation Details</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">Recommendation Details</CardTitle>
+              <InfoTooltip text="Granular details and exact SQL execution evidence for the selected recommendation. You can update the status of the fix here." />
+            </div>
             <CardDescription>{selected?.FINDING_ID || 'Select a row'}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -330,7 +340,10 @@ export default function RecommendationsTab({ dateRange }: { dateRange: { start: 
 
       <Card className="bg-slate-900 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-base">Recommendations by Category</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Recommendations by Category</CardTitle>
+            <InfoTooltip text="A high-level breakdown of where your optimization opportunities lie. Use this to decide which team (Security vs Data Engineering) should take action first." />
+          </div>
           <CardDescription>Distribution of filtered recommendations across optimization areas</CardDescription>
         </CardHeader>
         <CardContent>

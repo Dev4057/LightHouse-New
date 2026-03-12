@@ -11,6 +11,7 @@ import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import type { WarehouseCredit, ServiceCredit, IdleCost, OverprovisionedWH, UnderprovisionedWH, WarehouseUser, DormantWarehouse, MixedWorkload, Warehouse } from '@/types'
 import { useTheme } from 'next-themes'
 import LighthouseLoader from '@/components/ui/LighthouseLoader'
+import InfoTooltip from '@/components/ui/InfoTooltip' // ✨ Imported Tooltip
 
 interface WarehousesPageProps {
   dateRange: { start: Date; end: Date }
@@ -32,7 +33,7 @@ const EmptyState = ({ icon: Icon, title, desc }: { icon: any; title: string; des
 
 const TableScroll = ({ children, maxHeight }: { children: React.ReactNode; maxHeight?: string }) => (
   <div
-    className="w-full min-w-0 max-w-full overflow-x-auto"
+    className="w-full min-w-0 max-w-full overflow-x-auto scrollbar-thin"
     style={{ maxHeight: maxHeight ?? 'none', overflowY: maxHeight ? 'auto' : 'visible' }}
   >
     {children}
@@ -50,7 +51,6 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
   const startDate = dateRange.start.toISOString().split('T')[0]
   const endDate = dateRange.end.toISOString().split('T')[0]
 
-  // ✨ FIX: Grab the raw response from useFetch
   const { data: rawWhCredits, isLoading: loadingCredits } = useFetch<any>(['wh-credits', startDate, endDate], `/api/warehouses?type=credits&start=${startDate}&end=${endDate}`)
   const { data: rawServices, isLoading: loadingServices } = useFetch<any>(['service-credits', startDate, endDate], `/api/warehouses?type=services&start=${startDate}&end=${endDate}`)
   const { data: rawIdle, isLoading: loadingIdle } = useFetch<any>(['idle-cost', startDate, endDate], `/api/warehouses?type=idle&start=${startDate}&end=${endDate}`)
@@ -61,7 +61,6 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
   const { data: rawMixed, isLoading: loadingMixed } = useFetch<any>(['mixed-workloads', startDate, endDate], `/api/warehouses?type=mixed&start=${startDate}&end=${endDate}`)
   const { data: rawWarehouseList, error: warehouseListError, refetch: refetchWarehouseList } = useFetch<any>(['warehouse-list-controls'], '/api/warehouses?type=list')
 
-  // ✨ FIX: Safely extract arrays from either nested .data or flat responses
   const whCredits = useMemo(() => rawWhCredits?.data || (Array.isArray(rawWhCredits) ? rawWhCredits : []), [rawWhCredits])
   const services = useMemo(() => rawServices?.data || (Array.isArray(rawServices) ? rawServices : []), [rawServices])
   const idle = useMemo(() => rawIdle?.data || (Array.isArray(rawIdle) ? rawIdle : []), [rawIdle])
@@ -173,35 +172,39 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
     )
   }
 
-  const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden w-full min-w-0 flex flex-col transition-all duration-300"
-  const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
+  // ✨ FIX: Removed overflow-hidden from the main card container, added z-10
+  const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl  w-full min-w-0 flex flex-col transition-all duration-300 relative z-10"
+  
   const tdClass = "py-3 px-4 text-xs"
-  const theadClass = "bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800"
+  const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-0 border-b border-slate-200 dark:border-slate-800" // ✨ Lowered z-index of table header
   const trClass = "even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800/50 last:border-0 transition-colors"
-  const cardHeaderClass = "pb-4 border-b border-slate-200/50 dark:border-slate-700/50"
+  const cardHeaderClass = "pb-4 border-b border-slate-200/50 dark:border-slate-700/50 relative z-50" // ✨ Added z-50 to Header
   const cardFooterClass = "p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40"
   const sectionDividerClass = "border-b border-slate-200 dark:border-slate-800 pb-8"
 
   return (
-    <div className="space-y-8 w-full min-w-0 overflow-hidden">
+    <div className="space-y-8 w-full min-w-0"> {/* ✨ Removed overflow-hidden */}
 
       {/* ── SECTION 1: COST DISTRIBUTION ── */}
       <div className={sectionDividerClass}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* ✨ Removed overflow-hidden */}
 
           {/* Credits by Warehouse */}
           <Card className={cardClass}>
             <CardHeader className={cardHeaderClass}>
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                {creditUnitLabel} Consumed by Warehouse
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                  {creditUnitLabel} Consumed by Warehouse
+                </CardTitle>
+                <InfoTooltip text="Warehouses are the 'compute engines' running your database. This chart shows exactly which engines are burning the most fuel (credits) to complete their tasks." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Total spend breakdown across compute resources
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 flex-1 flex flex-col min-w-0 p-6">
+            <CardContent className="pt-4 flex-1 flex flex-col min-w-0 p-6 relative z-0"> {/* ✨ Added z-0 to Content */}
               {whCredits && whCredits.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 300 }}>
+                <div className="w-full" style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={whCredits.map((row: any) => ({ ...row, TOTAL_SPEND_DISPLAY: convertCredits(row.TOTAL_CREDITS_USED) }))}
@@ -252,16 +255,19 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
           {/* Service Type Credits */}
           <Card className={cardClass}>
             <CardHeader className={cardHeaderClass}>
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-indigo-500 pl-3">
-                {creditUnitLabel} by Service Type
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                  {creditUnitLabel} by Service Type
+                </CardTitle>
+                <InfoTooltip text="Snowflake bills for different types of operations. This splits your bill into Compute (running queries), Storage (holding data), and Cloud Services (background maintenance)." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Compute, storage, and cloud services breakdown
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 flex-1 flex flex-col min-w-0 p-6">
+            <CardContent className="pt-4 flex-1 flex flex-col min-w-0 p-6 relative z-0">
               {services && services.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 300 }}>
+                <div className="w-full" style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <defs>
@@ -332,26 +338,29 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
         {/* Idle Cost */}
         <Card className={cardClass}>
           <CardHeader className={cardHeaderClass}>
-            <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-red-500 pl-3">
-              Idle Spend by Warehouse
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-red-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                Idle Spend by Warehouse
+              </CardTitle>
+              <InfoTooltip text="Highlights warehouses that are running but not executing any queries. This is pure wasted money. Fix this by lowering your Auto-Suspend settings below." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               {isUsd ? 'Estimated USD cost of unused compute resources' : 'Idle compute credits (unused warehouse spend)'}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0">
             {idleRows.length > 0 ? (
               <TableScroll maxHeight="500px">
                 <table className="min-w-[600px] w-full text-sm text-left">
-                  <thead className={theadClass}>
+                  <thead className={thClass}>
                     <tr>
-                      <th className={`${thClass} w-10 text-center`}>#</th>
-                      <th className={thClass}>Warehouse</th>
-                      <th className={`${thClass} text-right hidden sm:table-cell`}>Total {creditUnitLabel}</th>
-                      <th className={`${thClass} text-right hidden md:table-cell`}>Query {creditUnitLabel}</th>
-                      <th className={`${thClass} text-right`}>Idle %</th>
-                      <th className={`${thClass} text-right`}>Idle {creditUnitLabel}</th>
-                      <th className={`${thClass} hidden lg:table-cell`}>Action</th>
+                      <th className={`w-10 text-center`}>#</th>
+                      <th>Warehouse</th>
+                      <th className={`text-right hidden sm:table-cell`}>Total {creditUnitLabel}</th>
+                      <th className={`text-right hidden md:table-cell`}>Query {creditUnitLabel}</th>
+                      <th className={`text-right`}>Idle %</th>
+                      <th className={`text-right`}>Idle {creditUnitLabel}</th>
+                      <th className={`hidden lg:table-cell`}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -392,29 +401,32 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
         </Card>
 
         {/* Over / Under provisioned */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Overprovisioned */}
           <Card className={cardClass}>
             <CardHeader className={cardHeaderClass}>
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-amber-500 pl-3">
-                Overprovisioned Warehouses
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                  Overprovisioned Warehouses
+                </CardTitle>
+                <InfoTooltip text="These warehouses are too large for the work they are doing. You can safely 'downsize' them (e.g., from Large to Medium) to save money without hurting performance." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Low utilization with no queueing downsize opportunity
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 min-w-0">
+            <CardContent className="p-0 min-w-0 relative z-0">
               {overprov && overprov.length > 0 ? (
                 <TableScroll>
                   <table className="min-w-[400px] w-full text-sm text-left">
-                    <thead className={theadClass}>
+                    <thead className={thClass}>
                       <tr>
-                        <th className={`${thClass} w-10 text-center`}>#</th>
-                        <th className={thClass}>Warehouse</th>
-                        <th className={`${thClass} text-right`}>Util %</th>
-                        <th className={`${thClass} text-right hidden sm:table-cell`}>Queue %</th>
-                        <th className={`${thClass} text-right`}>{creditUnitLabel}</th>
+                        <th className={`w-10 text-center`}>#</th>
+                        <th>Warehouse</th>
+                        <th className={`text-right`}>Util %</th>
+                        <th className={`text-right hidden sm:table-cell`}>Queue %</th>
+                        <th className={`text-right`}>{creditUnitLabel}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -442,24 +454,27 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
           {/* Underprovisioned */}
           <Card className={cardClass}>
             <CardHeader className={cardHeaderClass}>
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-red-500 pl-3">
-                Underprovisioned Warehouses
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-red-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                  Underprovisioned Warehouses
+                </CardTitle>
+                <InfoTooltip text="These warehouses are struggling to keep up with the volume of queries. Users are likely experiencing slow load times. Consider 'upsizing' them or adding clusters." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 High utilization with queueing upsize opportunity
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 min-w-0">
+            <CardContent className="p-0 min-w-0 relative z-0">
               {underprov && underprov.length > 0 ? (
                 <TableScroll>
                   <table className="min-w-[400px] w-full text-sm text-left">
-                    <thead className={theadClass}>
+                    <thead className={thClass}>
                       <tr>
-                        <th className={`${thClass} w-10 text-center`}>#</th>
-                        <th className={thClass}>Warehouse</th>
-                        <th className={`${thClass} text-right`}>Util %</th>
-                        <th className={`${thClass} text-right hidden sm:table-cell`}>Queue %</th>
-                        <th className={`${thClass} hidden md:table-cell`}>Action</th>
+                        <th className={`w-10 text-center`}>#</th>
+                        <th>Warehouse</th>
+                        <th className={`text-right`}>Util %</th>
+                        <th className={`text-right hidden sm:table-cell`}>Queue %</th>
+                        <th className={`hidden md:table-cell`}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -490,28 +505,31 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
 
       {/* ── SECTION 3: USAGE & CONTROLS ── */}
       <div className="space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* User Attribution */}
           <Card className={cardClass}>
             <CardHeader className={cardHeaderClass}>
-              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-400 pl-3">
-                Credit Consumed by Each User
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-blue-400 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                  Credit Consumed by Each User
+                </CardTitle>
+                <InfoTooltip text="Shows exactly which people or automated service accounts are driving up your warehouse costs. Great for finding rogue scripts." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Top user/warehouse credit attribution
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 min-w-0">
+            <CardContent className="p-0 min-w-0 relative z-0">
               {byUser && byUser.length > 0 ? (
                 <TableScroll maxHeight="400px">
                   <table className="min-w-[380px] w-full text-sm text-left">
-                    <thead className={theadClass}>
+                    <thead className={thClass}>
                       <tr>
-                        <th className={`${thClass} w-10 text-center`}>#</th>
-                        <th className={thClass}>User</th>
-                        <th className={`${thClass} hidden sm:table-cell`}>Warehouse</th>
-                        <th className={`${thClass} text-right`}>{creditUnitLabel}</th>
+                        <th className={`w-10 text-center`}>#</th>
+                        <th>User</th>
+                        <th className={`hidden sm:table-cell`}>Warehouse</th>
+                        <th className={`text-right`}>{creditUnitLabel}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -542,26 +560,29 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
           </Card>
 
           {/* Dormant + Mixed stacked */}
-          <div className="flex flex-col gap-6 min-w-0 overflow-hidden">
+          <div className="flex flex-col gap-6 min-w-0">
 
             <Card className={cardClass}>
               <CardHeader className={cardHeaderClass}>
-                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-slate-500 pl-3">
-                  Dormant Warehouses
-                </CardTitle>
+                <div className="flex items-center gap-2 border-l-2 border-slate-500 pl-3">
+                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    Dormant Warehouses
+                  </CardTitle>
+                  <InfoTooltip text="These warehouses haven't executed a query in a long time. You can probably safely delete them to clean up your Snowflake environment." />
+                </div>
                 <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                   Warehouses with negligible usage (&lt; 1 credit)
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-0 min-w-0">
+              <CardContent className="p-0 min-w-0 relative z-0">
                 {dormant && dormant.length > 0 ? (
                   <TableScroll maxHeight="180px">
                     <table className="min-w-[320px] w-full text-sm text-left">
-                      <thead className={theadClass}>
+                      <thead className={thClass}>
                         <tr>
-                          <th className={thClass}>Warehouse</th>
-                          <th className={`${thClass} text-right`}>{creditUnitLabel}</th>
-                          <th className={`${thClass} text-right`}>Days Inactive</th>
+                          <th>Warehouse</th>
+                          <th className={`text-right`}>{creditUnitLabel}</th>
+                          <th className={`text-right`}>Days Inactive</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -583,24 +604,27 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
 
             <Card className={cardClass}>
               <CardHeader className={cardHeaderClass}>
-                <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-purple-500 pl-3">
-                  Mixed Workloads
-                </CardTitle>
+                <div className="flex items-center gap-2 border-l-2 border-purple-500 pl-3">
+                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    Mixed Workloads
+                  </CardTitle>
+                  <InfoTooltip text="These warehouses are processing both tiny, fast queries and massive, slow queries at the same time. You should create separate warehouses for these workloads so the big jobs don't block the small ones." />
+                </div>
                 <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                   Warehouses executing multiple workload sizes
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-0 min-w-0">
+              <CardContent className="p-0 min-w-0 relative z-0">
                 {mixed && mixed.length > 0 ? (
                   <TableScroll maxHeight="180px">
                     <table className="min-w-[320px] w-full text-sm text-left">
-                      <thead className={theadClass}>
+                      <thead className={thClass}>
                         <tr>
-                          <th className={thClass}>Warehouse</th>
-                          <th className={`${thClass} text-right`}>S</th>
-                          <th className={`${thClass} text-right`}>M</th>
-                          <th className={`${thClass} text-right hidden sm:table-cell`}>L</th>
-                          <th className={`${thClass} text-right hidden sm:table-cell`}>XL</th>
+                          <th>Warehouse</th>
+                          <th className={`text-right`}>S</th>
+                          <th className={`text-right`}>M</th>
+                          <th className={`text-right hidden sm:table-cell`}>L</th>
+                          <th className={`text-right hidden sm:table-cell`}>XL</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -627,14 +651,17 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
         {/* Warehouse Controls */}
         <Card className={cardClass}>
           <CardHeader className={cardHeaderClass}>
-            <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-l-2 border-teal-500 pl-3">
-              Warehouse Auto-Suspend Controls
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-teal-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                Warehouse Auto-Suspend Controls
+              </CardTitle>
+              <InfoTooltip text="Directly change how many seconds a warehouse waits before turning itself off when not in use. Dropping this from 600s to 60s is the easiest way to save money instantly." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               Adjust suspend/resume settings directly from the dashboard
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0">
             <div className="p-4 space-y-2">
               {warehouseListError && (
                 <div className="rounded border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 px-3 py-2 text-xs text-red-700 dark:text-red-200 flex items-center gap-2">
@@ -656,14 +683,14 @@ export default function ComprehensiveWarehousesPage({ dateRange }: WarehousesPag
             {warehouseList && warehouseList.length > 0 ? (
               <TableScroll maxHeight="500px">
                 <table className="min-w-[640px] w-full text-sm text-left">
-                  <thead className={theadClass}>
+                  <thead className={thClass}>
                     <tr>
-                      <th className={thClass}>Warehouse</th>
-                      <th className={`${thClass} hidden sm:table-cell`}>State</th>
-                      <th className={`${thClass} hidden md:table-cell`}>Size</th>
-                      <th className={thClass}>Auto-Suspend (s)</th>
-                      <th className={`${thClass} text-center`}>Auto-Resume</th>
-                      <th className={`${thClass} text-right`}>Action</th>
+                      <th>Warehouse</th>
+                      <th className={`hidden sm:table-cell`}>State</th>
+                      <th className={`hidden md:table-cell`}>Size</th>
+                      <th>Auto-Suspend (s)</th>
+                      <th className={`text-center`}>Auto-Resume</th>
+                      <th className={`text-right`}>Action</th>
                     </tr>
                   </thead>
                   <tbody>

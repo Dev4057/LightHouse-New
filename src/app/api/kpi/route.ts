@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt' // ✨ Import the token fetcher
-import { getKPIMetrics } from '@/lib/snowflake/queries'
+import { getToken } from 'next-auth/jwt'
+import { getKPIMetrics, getPerformanceTrend } from '@/lib/snowflake/queries'
 import type { APIResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
   try {
-    // 🚨 1. GET THE USER TOKEN 🚨
+    // 1. GET THE USER TOKEN
     const token = await getToken({ 
       req: request, 
       secret: process.env.NEXTAUTH_SECRET 
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type') || 'summary'
     const startDate =
       searchParams.get('startDate') ||
       searchParams.get('start_date') ||
@@ -29,15 +30,19 @@ export async function GET(request: NextRequest) {
       searchParams.get('end_date') ||
       new Date().toISOString().split('T')[0]
 
-    // Fetch the raw data from Snowflake
-    const data = await getKPIMetrics(startDate, endDate)
+    let data
 
-    // 🚨 2. FIELD-LEVEL SECURITY 🚨
-    // If the user is a Developer, we strip out the financial field
-    if (token.role === 'DEVELOPER' && data) {
-      // We set it to null or delete it so it never reaches the browser network tab
-      data.TOTAL_CREDITS_USED = null 
-      // Note: Our frontend already handles null/missing values with a "-"
+    // ✨ Route to the correct Snowflake query based on 'type'
+    if (type === 'performance_trend') {
+      data = await getPerformanceTrend(startDate, endDate)
+    } else {
+      data = await getKPIMetrics(startDate, endDate)
+      
+      // 2. FIELD-LEVEL SECURITY
+      // If the user is a Developer, we strip out the financial field
+      if (token.role === 'DEVELOPER' && data) {
+        data.TOTAL_CREDITS_USED = null 
+      }
     }
 
     return NextResponse.json<APIResponse<any>>(

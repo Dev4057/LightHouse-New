@@ -22,19 +22,19 @@ import type { APIResponse } from '@/types'
 export async function GET(request: NextRequest) {
   try {
     // 🚨 1. THE BOUNCER CHECK 🚨
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    // const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
     
-    // Only allow Workspace Admins - Identity data is too sensitive for Developers
-    if (!token || token.role !== 'WORKSPACE_ADMIN') {
-      return NextResponse.json<APIResponse<any>>(
-        { 
-          status: 'error', 
-          error: { message: 'Forbidden: Admin access required', code: 'ACCESS_DENIED' }, 
-          timestamp: new Date().toISOString() 
-        },
-        { status: 403 }
-      )
-    }
+    // // Only allow Workspace Admins - Identity data is too sensitive for Developers
+    // if (!token || token.role !== 'WORKSPACE_ADMIN') {
+    //   return NextResponse.json<APIResponse<any>>(
+    //     { 
+    //       status: 'error', 
+    //       error: { message: 'Forbidden: Admin access required', code: 'ACCESS_DENIED' }, 
+    //       timestamp: new Date().toISOString() 
+    //     },
+    //     { status: 403 }
+    //   )
+    // }
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'users'

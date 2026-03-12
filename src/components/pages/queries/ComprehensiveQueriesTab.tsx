@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { DualAxisChart, HeatmapChart } from '@/components/ui/AdvancedCharts'
 import useFetch from '@/hooks/useApi'
-import { Terminal, Database, User, Copy, Activity, Search, FileQuestion, Clock } from 'lucide-react'
-import { formatSeconds, formatBytes, shortenText } from '@/lib/formatting'
+import { Terminal, Database, User, Copy, Activity, Search, FileQuestion, Clock, Flame, HardDrive, Layers } from 'lucide-react'
+import { formatSeconds, formatBytes, shortenText, formatNumber } from '@/lib/formatting' 
 import { useSpendDisplay } from '@/hooks/useSpendDisplay'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import QueryDetailModal from '@/components/ui/QueryDetailModal'
 import { useTheme } from 'next-themes'
-import type { QueryType, QueryUser, ExpensiveQuery, QueryTrend, HeatmapData, SpillQuery, PartitionPruningQuery, HighFrequencyQuery, Query } from '@/types'
+import InfoTooltip from '@/components/ui/InfoTooltip' 
 
 interface QueriesPageProps {
   dateRange: { start: Date; end: Date }
@@ -38,7 +38,6 @@ const EmptyState = ({ icon: Icon, title, desc }: EmptyStateProps) => (
 )
 
 const SkeletonCard = ({ className = "" }: { className?: string }) => (
-  // ✨ FIX: Added light mode classes to Skeleton
   <Card className={`bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700/60 p-6 ${className}`}>
     <div className="h-4 w-1/3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-2" />
     <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-6" />
@@ -48,7 +47,7 @@ const SkeletonCard = ({ className = "" }: { className?: string }) => (
 
 const TableScroll = ({ children, maxHeight }: { children: React.ReactNode, maxHeight?: string }) => (
   <div
-    className="w-full min-w-0 max-w-full overflow-x-auto"
+    className="w-full min-w-0 max-w-full overflow-x-auto scrollbar-thin"
     style={{ maxHeight: maxHeight ?? 'none', overflowY: maxHeight ? 'auto' : 'visible' }}
   >
     {children}
@@ -60,26 +59,26 @@ const TableScroll = ({ children, maxHeight }: { children: React.ReactNode, maxHe
 // ==========================================
 
 export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps) {
-  // ✨ FIX: Added theme detection for charts and tooltips
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
   const isDark = mounted ? resolvedTheme === 'dark' : true
 
-  const [selectedQuery, setSelectedQuery] = useState<ExpensiveQuery | SpillQuery | PartitionPruningQuery | Query | null>(null)
+  const [selectedQuery, setSelectedQuery] = useState<any | null>(null)
+  
   const { formatCreditValue, creditUnitLabel } = useSpendDisplay()
   const startDate = dateRange.start.toISOString().split('T')[0]
   const endDate = dateRange.end.toISOString().split('T')[0]
 
-  const { data: queryTypeData, isLoading: loadingQType } = useFetch<QueryType[]>(['q-type', startDate, endDate], `/api/queries?type=by-type&start=${startDate}&end=${endDate}`)
-  const { data: queryUserData, isLoading: loadingQUser } = useFetch<QueryUser[]>(['q-user', startDate, endDate], `/api/queries?type=by-user&start=${startDate}&end=${endDate}`)
-  const { data: expensiveData, isLoading: loadingExpensive } = useFetch<ExpensiveQuery[]>(['q-expensive', startDate, endDate], `/api/queries?type=expensive&start=${startDate}&end=${endDate}&limit=20`)
-  const { data: longestData, isLoading: loadingLongest } = useFetch<Query[]>(['q-longest', startDate, endDate], `/api/queries?type=longest&start=${startDate}&end=${endDate}&limit=20`)
-  const { data: trendData, isLoading: loadingTrend } = useFetch<QueryTrend[]>(['q-trend', startDate, endDate], `/api/queries?type=trend&start=${startDate}&end=${endDate}`)
-  const { data: heatmapData, isLoading: loadingHeatmap } = useFetch<HeatmapData[]>(['q-heatmap', startDate, endDate], `/api/queries?type=heatmap&start=${startDate}&end=${endDate}`)
-  const { data: spillData, isLoading: loadingSpill } = useFetch<SpillQuery[]>(['q-spill', startDate, endDate], `/api/queries?type=spill&start=${startDate}&end=${endDate}&limit=10`)
-  const { data: pruneData, isLoading: loadingPrune } = useFetch<PartitionPruningQuery[]>(['q-prune', startDate, endDate], `/api/queries?type=prune&start=${startDate}&end=${endDate}&limit=10`)
-  const { data: highFreqData, isLoading: loadingHighFreq } = useFetch<HighFrequencyQuery[]>(['q-highfreq', startDate, endDate], `/api/queries?type=high-frequency&start=${startDate}&end=${endDate}`)
+  const { data: queryTypeData, isLoading: loadingQType } = useFetch<any[]>(['q-type', startDate, endDate], `/api/queries?type=by-type&start=${startDate}&end=${endDate}`)
+  const { data: queryUserData, isLoading: loadingQUser } = useFetch<any[]>(['q-user', startDate, endDate], `/api/queries?type=by-user&start=${startDate}&end=${endDate}`)
+  const { data: expensiveData, isLoading: loadingExpensive } = useFetch<any[]>(['q-expensive', startDate, endDate], `/api/queries?type=expensive&start=${startDate}&end=${endDate}&limit=20`)
+  const { data: longestData, isLoading: loadingLongest } = useFetch<any[]>(['q-longest', startDate, endDate], `/api/queries?type=longest&start=${startDate}&end=${endDate}&limit=20`)
+  const { data: trendData, isLoading: loadingTrend } = useFetch<any[]>(['q-trend', startDate, endDate], `/api/queries?type=trend&start=${startDate}&end=${endDate}`)
+  const { data: heatmapData, isLoading: loadingHeatmap } = useFetch<any[]>(['q-heatmap', startDate, endDate], `/api/queries?type=heatmap&start=${startDate}&end=${endDate}`)
+  const { data: spillData, isLoading: loadingSpill } = useFetch<any[]>(['q-spill', startDate, endDate], `/api/queries?type=spill&start=${startDate}&end=${endDate}&limit=10`)
+  const { data: pruneData, isLoading: loadingPrune } = useFetch<any[]>(['q-prune', startDate, endDate], `/api/queries?type=prune&start=${startDate}&end=${endDate}&limit=10`)
+  const { data: highFreqData, isLoading: loadingHighFreq } = useFetch<any[]>(['q-highfreq', startDate, endDate], `/api/queries?type=high-frequency&start=${startDate}&end=${endDate}`)
 
   const isLoading = loadingQType || loadingQUser || loadingExpensive || loadingLongest || loadingTrend || loadingHeatmap || loadingSpill || loadingPrune || loadingHighFreq
 
@@ -97,7 +96,6 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
     return Math.max(...expensiveData.map(q => Number(q.CREDITS_ATTRIBUTED_COMPUTE || 0)))
   }, [expensiveData])
 
-  // ✨ FIX: Dynamic chart colors
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
   const axisStroke = isDark ? '#64748b' : '#94a3b8'
   const axisStrokeStrong = isDark ? '#475569' : '#cbd5e1'
@@ -136,48 +134,50 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
     )
   }
 
-  const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl overflow-hidden min-w-0 w-full flex flex-col transition-colors duration-300"
-  const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap"
-  const tdClass = "py-3 px-4 text-xs"
-  const trClass = "even:bg-slate-50 dark:even:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800/50 transition-colors"
+  // ✨ FIX: Removed overflow-hidden from the main card container, added z-10 
+  const cardClass = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl min-w-0 w-full flex flex-col transition-colors duration-300 relative z-10"
+  
+  const tdClass = "py-3 px-4 text-xs text-slate-600 dark:text-slate-300"
+  const thClass = "py-3 px-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-0" // ✨ Lowered z-index of table header
+  const trClass = "even:bg-slate-50/50 dark:even:bg-slate-900/20 hover:bg-slate-100/50 dark:hover:bg-slate-800/40 border-b border-slate-200/50 dark:border-slate-800/50 transition-colors cursor-pointer group"
 
   return (
-    <div className="space-y-8 w-full min-w-0 overflow-hidden">
+    <div className="space-y-8 w-full min-w-0"> {/* ✨ Removed overflow-hidden here too */}
 
       {/* ── SECTION 1: TIMING & PERFORMANCE ── */}
       <div className="border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* ✨ Removed overflow-hidden here too */}
 
           {/* Avg Execution Time by Query Type */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Avg Execution Time by Query Type
-              </CardTitle>
+            <CardHeader className="pb-4 relative z-50"> {/* ✨ Added relative z-50 to Header */}
+              <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Avg Execution Time by Query Type
+                </CardTitle>
+                <InfoTooltip text="Compares how long different types of operations (like reading data vs writing data) take to run. If basic SELECT queries are taking too long, your database might need clustering." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Avg seconds per query type operations
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 flex-1 flex flex-col min-w-0">
+            <CardContent className="pt-2 flex-1 flex flex-col min-w-0 relative z-0"> {/* ✨ Added relative z-0 to Content */}
               {queryTypeData && queryTypeData.length > 0 ? (
-               <div className="w-full overflow-hidden" style={{ height: 300 }}>
+               <div className="w-full" style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
-                      layout="vertical" // ✨ Flipped sideways
+                      layout="vertical" 
                       data={queryTypeData} 
                       margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                     >
                       <defs>
-                        <linearGradient id="qTypeGrad" x1="0" y1="0" x2="1" y2="0"> {/* ✨ Gradient flows left-to-right */}
+                        <linearGradient id="qTypeGrad" x1="0" y1="0" x2="1" y2="0"> 
                           <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
                           <stop offset="100%" stopColor="#1e3a8a" stopOpacity={0.4} />
                         </linearGradient>
                       </defs>
-                      
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} vertical={true} />
-                      
                       <XAxis type="number" stroke={axisStroke} axisLine={{ stroke: axisStrokeStrong }} tickLine={false} tick={{ fill: tickColor, fontSize: 10, fontWeight: 500 }} />
-                      
                       <YAxis 
                         type="category" 
                         dataKey="QUERY_TYPE" 
@@ -185,20 +185,18 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
                         axisLine={{ stroke: axisStrokeStrong }} 
                         tickLine={false} 
                         tick={{ fill: tickColor, fontSize: 10, fontWeight: 600 }} 
-                        width={120} // ✨ Plenty of room for long query names
+                        width={120} 
                         tickFormatter={(val) => {
-                          const cleanText = typeof val === 'string' ? val.replace(/_/g, ' ') : val; // Replaces ugly underscores
+                          const cleanText = typeof val === 'string' ? val.replace(/_/g, ' ') : val;
                           return cleanText.length > 18 ? `${cleanText.substring(0, 16)}...` : cleanText;
                         }} 
                       />
-                      
                       <Tooltip contentStyle={glassTooltipStyle} itemStyle={{ fontWeight: 600, color: tickColor }} cursor={{ fill: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }} formatter={(value) => [formatSeconds(value as number), 'Avg Time']} />
-                      
-                      {/* ✨ Rounded right corners, matching horizontal style */}
                       <Bar dataKey="AVERAGE_EXECUTION_SECONDS" fill="url(#qTypeGrad)" radius={[0, 4, 4, 0]} barSize={24} />
                     </BarChart>
                   </ResponsiveContainer>
-                </div>              ) : (
+                </div>
+              ) : (
                 <EmptyState icon={Activity} title="No Execution Data" desc="Not enough queries to calculate averages." />
               )}
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/50">
@@ -209,17 +207,20 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
 
           {/* Avg Execution Time by User */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Avg Execution Time by User
-              </CardTitle>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-teal-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Avg Execution Time by User
+                </CardTitle>
+                <InfoTooltip text="Identifies which specific people or service accounts are forcing the database to work the hardest. Useful for tracking down analysts running unoptimized code." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Avg execution time by top user accounts
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 flex-1 flex flex-col min-w-0">
+            <CardContent className="pt-2 flex-1 flex flex-col min-w-0 relative z-0">
               {queryUserData && queryUserData.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 300 }}>
+                <div className="w-full" style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={queryUserData.slice(0, 25)} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
                       <defs>
@@ -249,180 +250,110 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
 
       {/* ── SECTION 2: TRENDS & HEATMAP ── */}
       <div className="border-b border-slate-200 dark:border-slate-800 pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+          {/* Trend Chart */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Query Load & Trend
-              </CardTitle>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Query Load & Trend
+                </CardTitle>
+                <InfoTooltip text="Tracks your database activity over time. Watch for the 'Avg Seconds' line spiking upwards while 'Total Queries' stays flat — that indicates a severe system bottleneck." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Volume and performance timeline
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 flex-1 flex flex-col min-w-0">
+            <CardContent className="pt-2 flex-1 flex flex-col min-w-0 relative z-0">
               {trendData && trendData.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 320 }}>
-                  <DualAxisChart data={trendData} xKey="QUERY_DAY" barKey="QUERY_COUNT" lineKey="AVG_SECONDS" barLabel="Total Queries" lineLabel="Avg Seconds" height={320} />
+                <div className="w-full" style={{ height: 320 }}>
+                  <DualAxisChart 
+                    data={trendData} 
+                    xKey="QUERY_DAY" 
+                    barKey="QUERY_COUNT" 
+                    lineKey="AVG_SECONDS" 
+                    barLabel="Total Queries" 
+                    lineLabel="Avg Seconds" 
+                    height={320} 
+                  />
                 </div>
               ) : (
-                <EmptyState icon={Activity} title="No Timeline Data" desc="No trend history available." />
+                <EmptyState icon={Activity} title="No Trend Data" desc="Insufficient data to build timeline." />
               )}
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/50">
-                <WidgetAIInsight title="Query Load & Performance Daily Trend" widgetType="query_performance" dateRange={dateRange} widgetId="query_trend" widgetKind="chart" templateKey="query_trend" dataSample={trendData?.slice(0, 60) ?? []} />
+                <WidgetAIInsight title="Query Load & Trend" widgetType="query_performance" dateRange={dateRange} widgetId="q_trend" widgetKind="chart" templateKey="query_type_timing" dataSample={trendData?.slice(0, 25) ?? []} />
               </div>
             </CardContent>
           </Card>
 
+          {/* Heatmap */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Workload Heatmap
-              </CardTitle>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-purple-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Workload Heatmap
+                </CardTitle>
+                <InfoTooltip text="Shows exactly when your database is the busiest during the week. Darker squares mean more queries are running. Use this to schedule heavy automated jobs during 'light' hours." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-                Hourly query volume distribution
+                Query volume by day of week and hour
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-2 flex-1 flex flex-col min-w-0">
+            <CardContent className="pt-2 flex-1 flex flex-col min-w-0 relative z-0">
               {heatmapData && heatmapData.length > 0 ? (
-                <div className="w-full overflow-hidden" style={{ height: 320 }}>
+                <div className="w-full" style={{ height: 320 }}>
                   <HeatmapChart data={heatmapData} height={320} />
                 </div>
               ) : (
-                <EmptyState icon={Activity} title="No Hourly Data" desc="No patterns detected for this range." />
+                <EmptyState icon={Clock} title="No Heatmap Data" desc="Requires longer timeframe to map." />
               )}
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/50">
-                <WidgetAIInsight title="Workload by Day & Hour" widgetType="query_performance" dateRange={dateRange} widgetId="query_heatmap" widgetKind="chart" templateKey="workload_heatmap" dataSample={heatmapData?.slice(0, 120) ?? []} />
+                <WidgetAIInsight title="Workload Heatmap Analysis" widgetType="query_performance" dateRange={dateRange} widgetId="q_heatmap" widgetKind="chart" templateKey="query_type_timing" dataSample={heatmapData?.slice(0, 25) ?? []} />
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
 
-      {/* ── SECTION 3: TABLES ── */}
-      <div className="space-y-8">
-
-        {/* Most Expensive Queries */}
-        <Card className={cardClass}>
-          <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800/50">
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-              Most Expensive Queries
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-              Top queries driving compute costs — investigate patterns and missing filters
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 min-w-0">
-            {expensiveData && expensiveData.length > 0 ? (
-              <TableScroll maxHeight="500px">
-                <table className="min-w-[640px] w-full text-sm text-left">
-                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                      <th className={`${thClass} w-10 text-center`}>#</th>
-                      <th className={thClass}>Query</th>
-                      <th className={`${thClass} hidden md:table-cell`}>Timestamp</th>
-                      <th className={`${thClass} hidden sm:table-cell`}>User</th>
-                      <th className={`${thClass} hidden lg:table-cell`}>Warehouse</th>
-                      <th className={`${thClass} text-right hidden sm:table-cell`}>Duration</th>
-                      <th className={`${thClass} text-right`}>Cost ({creditUnitLabel})</th>
-                      <th className={`${thClass} text-right`}>AI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expensiveData.map((q, i) => {
-                      const currentCost = Number(q.CREDITS_ATTRIBUTED_COMPUTE || 0)
-                      const costPct = Math.min(100, Math.max(2, (currentCost / maxExpensiveCost) * 100))
-                      return (
-                        <tr key={(q as any).QUERY_ID || i} className={trClass}>
-                          <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
-                          <td className={`${tdClass} max-w-[200px]`}>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setSelectedQuery(q)}>
-                                <Terminal className="w-3 h-3 text-slate-400 shrink-0 group-hover:text-blue-500" />
-                                <span className="truncate text-slate-700 dark:text-slate-200 font-mono text-[11px] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title={q.QUERY_TEXT}>
-                                  {shortenText(q.QUERY_TEXT, 60)}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 pl-5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={(e) => copyToClipboard(e, q.QUERY_TEXT)} className="text-[10px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"><Copy className="w-3 h-3" /> SQL</button>
-                                {(q as any).QUERY_ID && <button onClick={(e) => copyToClipboard(e, (q as any).QUERY_ID)} className="text-[10px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"><Copy className="w-3 h-3" /> ID</button>}
-                              </div>
-                            </div>
-                          </td>
-                          <td className={`${tdClass} text-slate-500 dark:text-slate-400 hidden md:table-cell whitespace-nowrap`}>
-                            {(q as any).START_TIME ? new Date((q as any).START_TIME).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
-                          </td>
-                          <td className={`${tdClass} hidden sm:table-cell`}>
-                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><User className="w-3 h-3 text-slate-400 shrink-0" /><span className="text-[11px] truncate max-w-[100px]">{q.USER_NAME}</span></div>
-                          </td>
-                          <td className={`${tdClass} hidden lg:table-cell`}>
-                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><Database className="w-3 h-3 text-slate-400 shrink-0" /><span className="text-[11px] truncate max-w-[100px]">{q.WAREHOUSE_NAME}</span></div>
-                          </td>
-                          <td className={`${tdClass} text-right text-slate-600 dark:text-slate-300 hidden sm:table-cell whitespace-nowrap`}>{formatSeconds(q.EXECUTION_SECONDS)}</td>
-                          <td className={`${tdClass} text-right relative`}>
-                            <div className="absolute inset-y-2 right-4 bg-blue-100 dark:bg-blue-500/15 rounded pointer-events-none" style={{ width: `calc(${costPct}% - 1rem)` }} />
-                            <span className="relative z-10 text-xs font-bold text-blue-700 dark:text-blue-400 whitespace-nowrap">{formatCreditValue(q.CREDITS_ATTRIBUTED_COMPUTE)}</span>
-                          </td>
-                          <td className={`${tdClass} text-right`}>
-                            <WidgetAIInsight title="Most Expensive Query" widgetType="cost_analysis" dateRange={dateRange} inline label="Analyze" widgetId="expensive_queries" widgetKind="table_row" templateKey="expensive_queries" dataSample={[q]} selectedRow={q as unknown as Record<string, unknown>} />
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </TableScroll>
-            ) : (
-              <EmptyState icon={FileQuestion} title="No Expensive Queries" desc="No queries found with significant compute cost." />
-            )}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <WidgetAIInsight title="Most Expensive Queries" widgetType="cost_analysis" dateRange={dateRange} widgetId="expensive_queries" widgetKind="table" templateKey="expensive_queries" dataSample={expensiveData?.slice(0, 20) ?? []} />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Disk Spill & Partition Pruning */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden">
-
-          {/* Spill */}
+      {/* ── SECTION 3: TOP COST & DURATION ── */}
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Most Expensive Queries */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800/50">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Under-Resourced (Disk Spill)
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-                Queries exceeding memory limits
-              </CardDescription>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-red-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Most Expensive Queries
+                </CardTitle>
+                <InfoTooltip text="These specific queries burned the most compute credits (money). Optimizing even one of these top queries can significantly lower your monthly Snowflake bill." />
+              </div>
             </CardHeader>
-            <CardContent className="p-0 min-w-0">
-              {spillData && spillData.length > 0 ? (
-                <TableScroll>
-                  <table className="min-w-[360px] w-full text-sm text-left">
-                    <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+            <CardContent className="p-0 flex-1 flex flex-col min-w-0 relative z-0">
+              {expensiveData && expensiveData.length > 0 ? (
+                <TableScroll maxHeight="400px">
+                  <table className="w-full text-left">
+                    <thead>
                       <tr>
-                        <th className={`${thClass} w-10 text-center`}>#</th>
-                        <th className={thClass}>Query</th>
-                        <th className={`${thClass} text-right`}>Local</th>
-                        <th className={`${thClass} text-right`}>Remote</th>
+                        <th className={thClass}>Query ID</th>
+                        <th className={thClass}>User</th>
+                        <th className={`${thClass} text-right`}>{creditUnitLabel}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {spillData.map((q, i) => (
-                        <tr key={i} className={trClass}>
-                          <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
-                          <td className={`${tdClass} max-w-[160px]`}>
-                            <div className="flex items-center gap-2 group">
-                              <span className="truncate text-[11px] text-slate-700 dark:text-slate-200 font-mono cursor-pointer group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title={q.QUERY_TEXT} onClick={() => setSelectedQuery(q)}>
-                                {shortenText(q.QUERY_TEXT, 35)}
-                              </span>
-                              <button onClick={(e) => copyToClipboard(e, q.QUERY_TEXT)} className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400 shrink-0 transition-all"><Copy className="w-3 h-3" /></button>
-                            </div>
+                      {expensiveData.map((q, i) => (
+                        <tr key={i} className={trClass} onClick={() => setSelectedQuery(q)}>
+                          <td className={`${tdClass} font-mono font-medium flex items-center gap-2`}>
+                            {shortenText(q.QUERY_ID, 12)}
+                            <button onClick={(e) => copyToClipboard(e, q.QUERY_ID)} className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Copy className="w-3 h-3" />
+                            </button>
                           </td>
-                          <td className={`${tdClass} text-right whitespace-nowrap`}>
-                            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-100 bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 px-2 py-0.5 rounded">{formatBytes(q.BYTES_SPILLED_TO_LOCAL_STORAGE)}</span>
-                          </td>
-                          <td className={`${tdClass} text-right whitespace-nowrap`}>
-                            <span className="text-[11px] font-bold text-red-700 dark:text-red-100 bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/40 px-2 py-0.5 rounded">{formatBytes(q.BYTES_SPILLED_TO_REMOTE_STORAGE)}</span>
+                          <td className={tdClass}>{shortenText(q.USER_NAME, 15)}</td>
+                          <td className={`${tdClass} text-right font-bold text-red-500 dark:text-red-400`}>
+                            {formatCreditValue(Number(q.CREDITS_ATTRIBUTED_COMPUTE || 0))}
                           </td>
                         </tr>
                       ))}
@@ -430,123 +361,184 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
                   </table>
                 </TableScroll>
               ) : (
-                <EmptyState icon={Database} title="System Healthy" desc="No local or remote spills detected." />
+                <EmptyState icon={Database} title="No Expensive Queries" desc="No high-cost queries detected." />
               )}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-                <WidgetAIInsight title="Under-Resourced Queries (Disk Spill)" widgetType="query_performance" dateRange={dateRange} widgetId="spill_queries" widgetKind="table" templateKey="spill_queries" dataSample={spillData?.slice(0, 20) ?? []} />
-              </div>
             </CardContent>
           </Card>
 
-          {/* Pruning */}
+          {/* Longest Running Queries */}
           <Card className={cardClass}>
-            <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800/50">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Poor Partition Pruning
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-                Inefficient data scanning patterns
-              </CardDescription>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Longest Running Queries
+                </CardTitle>
+                <InfoTooltip text="These queries took the longest wall-clock time to finish. Slow queries frustrate users and tie up warehouses, blocking other queries from running." />
+              </div>
             </CardHeader>
-            <CardContent className="p-0 min-w-0">
-              {pruneData && pruneData.length > 0 ? (
-                <TableScroll>
-                  <table className="min-w-[360px] w-full text-sm text-left">
-                    <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+            <CardContent className="p-0 flex-1 flex flex-col min-w-0 relative z-0">
+              {longestData && longestData.length > 0 ? (
+                <TableScroll maxHeight="400px">
+                  <table className="w-full text-left">
+                    <thead>
                       <tr>
-                        <th className={`${thClass} w-10 text-center`}>#</th>
-                        <th className={thClass}>Query</th>
-                        <th className={`${thClass} text-right`}>Pruning %</th>
-                        <th className={`${thClass} text-right`}>Scan Ratio</th>
+                        <th className={thClass}>Query ID</th>
+                        <th className={thClass}>User</th>
+                        <th className={`${thClass} text-right`}>Duration</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {pruneData.map((q, i) => {
-                        const ratio = Math.max(0, Math.min(100, Number(q.PRUNING_RATIO || 0) > 1 ? Number(q.PRUNING_RATIO || 0) : Number(q.PRUNING_RATIO || 0) * 100))
-                        
-                        // Theme-aware colors
-                        const ratioColor = ratio < 20 
-                          ? 'border-red-300 dark:border-red-500/40 bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-100' 
-                          : ratio < 50 
-                          ? 'border-amber-300 dark:border-amber-500/40 bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-100' 
-                          : 'border-emerald-300 dark:border-emerald-500/40 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-100'
-                        
-                        return (
-                          <tr key={i} className={trClass}>
-                            <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
-                            <td className={`${tdClass} max-w-[160px]`}>
-                              <div className="flex items-center gap-2 group">
-                                <span className="truncate text-[11px] text-slate-700 dark:text-slate-200 font-mono cursor-pointer group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title={q.QUERY_TEXT} onClick={() => setSelectedQuery(q)}>
-                                  {shortenText(q.QUERY_TEXT, 35)}
-                                </span>
-                                <button onClick={(e) => copyToClipboard(e, q.QUERY_TEXT)} className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400 shrink-0 transition-all"><Copy className="w-3 h-3" /></button>
-                              </div>
-                            </td>
-                            <td className={`${tdClass} text-right whitespace-nowrap`}>
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${ratioColor}`}>{ratio.toFixed(1)}%</span>
-                            </td>
-                            <td className={`${tdClass} text-right text-slate-600 dark:text-slate-300 whitespace-nowrap`}>
-                              {q.PARTITIONS_SCANNED}<span className="text-slate-400 dark:text-slate-500 mx-1">/</span>{q.PARTITIONS_TOTAL}
-                            </td>
-                          </tr>
-                        )
-                      })}
+                      {longestData.map((q, i) => (
+                        <tr key={i} className={trClass} onClick={() => setSelectedQuery(q)}>
+                          <td className={`${tdClass} font-mono font-medium flex items-center gap-2`}>
+                            {shortenText(q.QUERY_ID, 12)}
+                            <button onClick={(e) => copyToClipboard(e, q.QUERY_ID)} className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </td>
+                          <td className={tdClass}>{shortenText(q.USER_NAME, 15)}</td>
+                          <td className={`${tdClass} text-right font-bold text-amber-600 dark:text-amber-400`}>
+                            {formatSeconds(Number(q.TOTAL_ELAPSED_TIME || 0) / 1000)}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </TableScroll>
               ) : (
-                <EmptyState icon={Activity} title="Optimum Performance" desc="All queries scanning data correctly." />
+                <EmptyState icon={Clock} title="No Slow Queries" desc="System performance looks healthy." />
               )}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-                <WidgetAIInsight title="Inefficient Queries (Poor Partition Pruning)" widgetType="query_performance" dateRange={dateRange} widgetId="prune_queries" widgetKind="table" templateKey="prune_queries" dataSample={pruneData?.slice(0, 20) ?? []} />
-              </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* High Frequency Queries */}
+        </div>
+      </div>
+
+      {/* ── SECTION 4: INEFFICIENCIES (Spill & Pruning) ── */}
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Spilling Queries */}
+          <Card className={cardClass}>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-orange-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Data Spilling to Disk
+                </CardTitle>
+                <InfoTooltip text="'Spilling' happens when a query runs out of memory (RAM) and is forced to write temporary data to the hard drive. This makes the query extremely slow. You may need to increase the warehouse size." />
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 flex-1 flex flex-col min-w-0 relative z-0">
+              {spillData && spillData.length > 0 ? (
+                <TableScroll maxHeight="400px">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr>
+                        <th className={thClass}>Query ID</th>
+                        <th className={`${thClass} text-right`}>Local Spill</th>
+                        <th className={`${thClass} text-right`}>Remote Spill</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {spillData.map((q, i) => (
+                        <tr key={i} className={trClass} onClick={() => setSelectedQuery(q)}>
+                          <td className={`${tdClass} font-mono font-medium flex items-center gap-2`}>
+                            {shortenText(q.QUERY_ID, 12)}
+                            <button onClick={(e) => copyToClipboard(e, q.QUERY_ID)} className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </td>
+                          <td className={`${tdClass} text-right text-orange-500`}>{formatBytes(Number(q.BYTES_SPILLED_TO_LOCAL_STORAGE || 0))}</td>
+                          <td className={`${tdClass} text-right text-red-500 font-bold`}>{formatBytes(Number(q.BYTES_SPILLED_TO_REMOTE_STORAGE || 0))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableScroll>
+              ) : (
+                <EmptyState icon={HardDrive} title="No Spilling" desc="Warehouses have sufficient memory." />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Partition Pruning Issues */}
+          <Card className={cardClass}>
+            <CardHeader className="pb-4 relative z-50">
+              <div className="flex items-center gap-2 border-l-2 border-pink-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Poor Partition Pruning
+                </CardTitle>
+                <InfoTooltip text="These queries scanned way too much data instead of using filters (like a 'WHERE date =' clause). This is a huge waste of resources and usually means bad SQL code." />
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 flex-1 flex flex-col min-w-0 relative z-0">
+              {pruneData && pruneData.length > 0 ? (
+                <TableScroll maxHeight="400px">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr>
+                        <th className={thClass}>Query ID</th>
+                        <th className={`${thClass} text-right`}>Scanned</th>
+                        <th className={`${thClass} text-right`}>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pruneData.map((q, i) => (
+                        <tr key={i} className={trClass} onClick={() => setSelectedQuery(q)}>
+                          <td className={`${tdClass} font-mono font-medium flex items-center gap-2`}>
+                            {shortenText(q.QUERY_ID, 12)}
+                            <button onClick={(e) => copyToClipboard(e, q.QUERY_ID)} className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </td>
+                          <td className={`${tdClass} text-right text-pink-500 font-bold`}>{formatNumber(Number(q.PARTITIONS_SCANNED || 0))}</td>
+                          <td className={`${tdClass} text-right text-slate-500`}>{formatNumber(Number(q.PARTITIONS_TOTAL || 0))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableScroll>
+              ) : (
+                <EmptyState icon={Layers} title="Efficient Scanning" desc="No major pruning issues detected." />
+              )}
+            </CardContent>
+          </Card>
+
+        </div>
+      </div>
+
+      {/* ── SECTION 5: HIGH FREQUENCY ── */}
+      <div>
         <Card className={cardClass}>
-          <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800/50">
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-teal-500 pl-3">
-              High Frequency Queries
-            </CardTitle>
+          <CardHeader className="pb-4 relative z-50">
+            <div className="flex items-center gap-2 border-l-2 border-cyan-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                High Frequency / Robotic Queries
+              </CardTitle>
+              <InfoTooltip text="Queries running thousands of times a day. This is often a sign of a broken automated script, a dashboard refreshing too fast, or an app missing a cache layer." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-              Repeated query fingerprints — prime candidates for caching or materialization
+              Exact SQL statements executed repeatedly
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 flex-1 flex flex-col min-w-0 relative z-0">
             {highFreqData && highFreqData.length > 0 ? (
               <TableScroll maxHeight="400px">
-                <table className="min-w-[560px] w-full text-sm text-left">
-                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+                <table className="w-full text-left">
+                  <thead>
                     <tr>
-                      <th className={`${thClass} w-10 text-center`}>#</th>
-                      <th className={thClass}>Query Pattern</th>
-                      <th className={`${thClass} text-right`}>Runs</th>
-                      <th className={`${thClass} text-right hidden sm:table-cell`}>Avg Time</th>
-                      <th className={`${thClass} text-right hidden sm:table-cell`}>Total Time</th>
-                      <th className={`${thClass} hidden md:table-cell`}>User</th>
+                      <th className={thClass}>Query Text</th>
+                      <th className={`${thClass} text-right`}>Executions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {highFreqData.map((q, i) => (
                       <tr key={i} className={trClass}>
-                        <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
-                        <td className={`${tdClass} max-w-[180px]`}>
-                          <div className="flex items-center gap-2 group">
-                            <span className="truncate text-[11px] text-slate-700 dark:text-slate-200 font-mono group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title={q.SAMPLE_QUERY_TEXT}>
-                              {shortenText(q.SAMPLE_QUERY_TEXT, 55)}
-                            </span>
-                            <button onClick={(e) => copyToClipboard(e, q.SAMPLE_QUERY_TEXT)} className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400 shrink-0 transition-all"><Copy className="w-3 h-3" /></button>
-                          </div>
+                        <td className={`${tdClass} font-mono text-slate-600 dark:text-slate-300`} title={q.QUERY_TEXT}>
+                          {shortenText(q.QUERY_TEXT, 80)}
                         </td>
-                        <td className={`${tdClass} text-right whitespace-nowrap`}>
-                          <span className="text-[11px] font-bold text-blue-700 dark:text-blue-100 bg-blue-100 dark:bg-blue-500/10 px-2 py-0.5 rounded border border-blue-300 dark:border-blue-500/40">{q.QUERY_COUNT}x</span>
-                        </td>
-                        <td className={`${tdClass} text-right text-slate-500 dark:text-slate-400 hidden sm:table-cell whitespace-nowrap`}>{q.AVG_EXECUTION_SECONDS}s</td>
-                        <td className={`${tdClass} text-right text-slate-900 dark:text-slate-100 font-semibold hidden sm:table-cell whitespace-nowrap`}>{q.TOTAL_EXECUTION_SECONDS}s</td>
-                        <td className={`${tdClass} hidden md:table-cell`}>
-                          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><User className="w-3 h-3 text-slate-400 shrink-0" /><span className="text-[11px] truncate max-w-[100px]">{shortenText(q.USER_NAMES, 18)}</span></div>
+                        <td className={`${tdClass} text-right font-bold text-cyan-600 dark:text-cyan-400`}>
+                          {formatNumber(Number(q.EXECUTION_COUNT || 0))}
                         </td>
                       </tr>
                     ))}
@@ -554,91 +546,16 @@ export default function ComprehensiveQueriesPage({ dateRange }: QueriesPageProps
                 </table>
               </TableScroll>
             ) : (
-              <EmptyState icon={Activity} title="No Repeating Queries" desc="No high-frequency repeating query patterns detected." />
+              <EmptyState icon={Terminal} title="Normal Volume" desc="No unusual robotic query patterns." />
             )}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <WidgetAIInsight title="High Frequency Queries" widgetType="query_performance" dateRange={dateRange} widgetId="high_frequency_queries" widgetKind="table" templateKey="high_frequency_queries" dataSample={highFreqData?.slice(0, 30) ?? []} />
-            </div>
           </CardContent>
         </Card>
-
-        {/* Longest Running Queries */}
-        <Card className={cardClass}>
-          <CardHeader className="pb-4 border-b border-slate-200 dark:border-slate-800/50">
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-red-500 pl-3">
-              Longest Running Queries
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
-              Queries with highest elapsed time — identifies severe bottlenecks
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 min-w-0">
-            {longestData && longestData.length > 0 ? (
-              <TableScroll maxHeight="500px">
-                <table className="min-w-[640px] w-full text-sm text-left">
-                  <thead className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                      <th className={`${thClass} w-10 text-center`}>#</th>
-                      <th className={thClass}>Query Details</th>
-                      <th className={`${thClass} hidden md:table-cell`}>Timestamp</th>
-                      <th className={`${thClass} hidden sm:table-cell`}>User</th>
-                      <th className={`${thClass} hidden lg:table-cell`}>Warehouse</th>
-                      <th className={`${thClass} text-right`}>Elapsed</th>
-                      <th className={`${thClass} text-right`}>AI</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {longestData.map((q, i) => (
-                      <tr key={q.QUERY_ID || i} className={trClass}>
-                        <td className={`${tdClass} text-center text-slate-500 font-medium`}>{i + 1}</td>
-                        <td className={`${tdClass} max-w-[200px]`}>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setSelectedQuery(q)}>
-                              <Terminal className="w-3 h-3 text-slate-400 shrink-0 group-hover:text-blue-500" />
-                              <span className="truncate text-[11px] text-slate-700 dark:text-slate-200 font-mono group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title={q.QUERY_TEXT}>
-                                {shortenText(q.QUERY_TEXT, 60)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 pl-5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={(e) => copyToClipboard(e, q.QUERY_TEXT)} className="text-[10px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"><Copy className="w-3 h-3" /> SQL</button>
-                              {q.QUERY_ID && <button onClick={(e) => copyToClipboard(e, q.QUERY_ID as string)} className="text-[10px] text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"><Copy className="w-3 h-3" /> ID</button>}
-                            </div>
-                          </div>
-                        </td>
-                        <td className={`${tdClass} text-slate-500 dark:text-slate-400 hidden md:table-cell whitespace-nowrap`}>
-                          {(q as any).START_TIME ? new Date((q as any).START_TIME).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
-                        </td>
-                        <td className={`${tdClass} hidden sm:table-cell`}>
-                          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><User className="w-3 h-3 text-slate-400 shrink-0" /><span className="text-[11px] truncate max-w-[100px]">{q.USER_NAME}</span></div>
-                        </td>
-                        <td className={`${tdClass} hidden lg:table-cell`}>
-                          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><Database className="w-3 h-3 text-slate-400 shrink-0" /><span className="text-[11px] truncate max-w-[100px]">{q.WAREHOUSE_NAME}</span></div>
-                        </td>
-                        <td className={`${tdClass} text-right whitespace-nowrap`}>
-                          <span className="text-[11px] font-bold text-red-700 dark:text-red-100 bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/40 px-2 py-0.5 rounded">
-                            {formatSeconds((Number((q as any).ELAPSED_TIME_SEC) || Number(q.EXECUTION_TIME || 0) / 1000 || 0))}
-                          </span>
-                        </td>
-                        <td className={`${tdClass} text-right`}>
-                          <WidgetAIInsight title="Longest Running Query" widgetType="query_performance" dateRange={dateRange} inline label="Analyze" widgetId="longest_queries" widgetKind="table_row" templateKey="longest_queries" dataSample={[q]} selectedRow={q as unknown as Record<string, unknown>} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </TableScroll>
-            ) : (
-              <EmptyState icon={Clock} title="No Slow Queries" desc="No significantly long-running queries detected." />
-            )}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-              <WidgetAIInsight title="Longest Running Queries" widgetType="query_performance" dateRange={dateRange} widgetId="longest_queries" widgetKind="table" templateKey="longest_queries" dataSample={longestData?.slice(0, 20) ?? []} />
-            </div>
-          </CardContent>
-        </Card>
-
       </div>
 
-      <QueryDetailModal isOpen={!!selectedQuery} onClose={() => setSelectedQuery(null)} query={selectedQuery as any} title="Query Details" />
+      {selectedQuery && (
+        <QueryDetailModal query={selectedQuery} onClose={() => setSelectedQuery(null)} isOpen={false} />
+      )}
+
     </div>
   )
 }

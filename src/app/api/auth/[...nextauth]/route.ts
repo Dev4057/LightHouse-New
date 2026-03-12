@@ -14,7 +14,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
   },
 
-  // 3. Set up the Credentials Provider (The Mock Database)
+  // 3. Set up the Credentials Provider (Safely preserved for the future!)
   providers: [
     CredentialsProvider({
       name: "Email and Password",
@@ -27,7 +27,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials")
         }
 
-        // 🚨 MOCK DATABASE: In production, this would be a Prisma/Supabase query 🚨
         const mockUsers = [
           { id: "1", name: "Head of Data", email: "admin@lighthouse.dev", password: "admin", role: "WORKSPACE_ADMIN" as LighthouseRole },
           { id: "2", name: "Data Ops Engineer", email: "dataops@lighthouse.dev", password: "dataops", role: "COMPUTE_ADMIN" as LighthouseRole },
@@ -37,7 +36,6 @@ export const authOptions: NextAuthOptions = {
         const user = mockUsers.find(u => u.email === credentials.email)
 
         if (user && user.password === credentials.password) {
-          // Strip out the password before returning the user object
           return { id: user.id, name: user.name, email: user.email, role: user.role }
         }
 
@@ -46,7 +44,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
 
-  // 4. Callbacks: This injects the role into the secure cookie so the frontend can read it
+  // 4. Callbacks: Where we inject the Ghost Auth
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -56,9 +54,14 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as LighthouseRole
+      // ✨ GHOST AUTH BYPASS ✨
+      // No matter what happens, we force the frontend to see this Admin session.
+      // Your Header will now say "Devang (Admin)" without anyone logging in!
+      session.user = {
+        id: "ghost-admin-123",
+        name: "Devang (Admin)",
+        email: "devang@lighthouse.local",
+        role: "WORKSPACE_ADMIN" as LighthouseRole,
       }
       return session
     }

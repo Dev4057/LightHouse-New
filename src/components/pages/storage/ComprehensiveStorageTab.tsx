@@ -9,14 +9,16 @@ import { formatBytes, formatNumber, shortenText } from '@/lib/formatting'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import { useTheme } from 'next-themes'
 import LighthouseLoader from '@/components/ui/LighthouseLoader'
+import InfoTooltip from '@/components/ui/InfoTooltip' // ✨ Imported Tooltip
 
 const PIE_COLORS = ['#3b82f6', '#0ea5e9', '#2dd4bf', '#8b5cf6', '#6366f1', '#4f46e5', '#1e40af']
 
 // ── GLASSMORPHISM TAILWIND CLASSES ───────────────────────────────────────────
-// These explicit classes guarantee the frosted glass look in both themes
-const glassCard = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 overflow-hidden transition-all duration-300"
-const glassHeader = "px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md"
-const glassTableHead = "bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-10 border-b border-slate-200/50 dark:border-slate-700/50"
+// ✨ FIX: Removed 'overflow-hidden' from glassCard so tooltips can escape
+const glassCard = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 transition-all duration-300 relative z-10"
+const glassHeader = "px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md relative z-50" // ✨ Added relative z-50
+// ✨ FIX: Lowered sticky z-index so it doesn't overlap tooltips
+const glassTableHead = "bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-0 border-b border-slate-200/50 dark:border-slate-700/50" 
 const glassRow = "border-b border-slate-200/50 dark:border-slate-800/50 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors group"
 
 // ── Reusable Components ──────────────────────────────────────────────────────
@@ -93,7 +95,7 @@ if (isLoading || !mounted) {
   const tdClass = "py-3 px-4 text-xs"
 
   return (
-    <div className="space-y-8 w-full min-w-0 overflow-hidden px-1">
+    <div className="space-y-8 w-full min-w-0 px-1"> {/* ✨ Removed overflow-hidden */}
       
       {/* ── KPI GRID ── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 min-w-0">
@@ -121,14 +123,17 @@ if (isLoading || !mounted) {
         
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-              Database Distribution
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Database Distribution
+              </CardTitle>
+              <InfoTooltip text="Snowflake charges you based on how much raw data you store. This pie chart breaks down exactly which of your databases are taking up the most physical hard drive space." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               Storage composition by database average
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 flex-1 flex flex-col min-w-0">
+          <CardContent className="p-6 flex-1 flex flex-col min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {summaryDist && summaryDist.length > 0 ? (
               <div className="w-full h-[320px] overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
@@ -139,7 +144,6 @@ if (isLoading || !mounted) {
 <Tooltip 
   contentStyle={glassTooltip} 
   formatter={(v) => formatBytes(v as number)} 
-  // ✨ ADD THIS LINE to control the text color:
   itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600 }}
 />                    <Legend wrapperStyle={{ fontSize: '11px', color: axisColor, paddingTop: '10px' }} iconType="circle" />
                   </PieChart>
@@ -154,14 +158,17 @@ if (isLoading || !mounted) {
 
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-indigo-500 pl-3">
-              Top Databases (GB)
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Top Databases (GB)
+              </CardTitle>
+              <InfoTooltip text="This converts the raw byte sizes of your databases into Gigabytes (GB) so it is easier to read and compare side-by-side." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               Average storage across selected window
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 flex-1 flex flex-col min-w-0">
+          <CardContent className="p-6 flex-1 flex flex-col min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {topDb && topDb.length > 0 ? (
               <div className="w-full h-[320px] overflow-hidden">
                 <ResponsiveContainer width="100%" height="100%">
@@ -193,14 +200,17 @@ if (isLoading || !mounted) {
       {/* ── OVERALL STORAGE TIMELINE ── */}
       <Card className={glassCard}>
         <CardHeader className={glassHeader}>
-          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-emerald-500 pl-3">
-            Overall Storage Footprint
-          </CardTitle>
+          <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-3">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+              Overall Storage Footprint
+            </CardTitle>
+            <InfoTooltip text="Tracks how much data you are holding over time. If this bar is constantly growing, your storage costs will keep rising. You should implement data retention policies to delete old data." />
+          </div>
           <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
             Combined footprint of all databases and internal stages
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6 flex-1 flex flex-col min-w-0">
+        <CardContent className="p-6 flex-1 flex flex-col min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
           {overall && overall.length > 0 ? (
             <div className="w-full h-[360px] overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
@@ -231,11 +241,14 @@ if (isLoading || !mounted) {
         
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-slate-500 pl-3">
-              Stage Storage Usage
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-slate-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Stage Storage Usage
+              </CardTitle>
+              <InfoTooltip text="'Stages' are temporary landing zones where raw data waits before it gets loaded into Snowflake. Sometimes engineers forget to delete the raw files after loading, creating dead weight. Check these paths for old files." />
+            </div>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {stageBytes && stageBytes.length > 0 ? (
               <TableScroll maxHeight="400px">
                 <table className="w-full text-sm text-left">
@@ -261,14 +274,17 @@ if (isLoading || !mounted) {
 
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-orange-500 pl-3">
-              Large Inactive Tables
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-orange-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Large Inactive Tables
+              </CardTitle>
+              <InfoTooltip text="These are massive tables taking up tons of hard drive space, but nobody has read from them in a long time. These are prime candidates to be deleted to save money on storage costs." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               Candidate tables for cleanup or archiving
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {largeUnused && largeUnused.length > 0 ? (
               <TableScroll maxHeight="400px">
                 <table className="w-full text-sm text-left">
@@ -299,11 +315,14 @@ if (isLoading || !mounted) {
         
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-              Most Accessed Tables
-            </CardTitle>
+             <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Most Accessed Tables
+              </CardTitle>
+              <InfoTooltip text="These are the most popular datasets in your organization. If these tables are slow, your entire company feels it. Consider heavily optimizing or clustering these." />
+            </div>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {mostAccessed && mostAccessed.length > 0 ? (
               <TableScroll maxHeight="400px">
                 <table className="w-full text-sm text-left">
@@ -329,11 +348,14 @@ if (isLoading || !mounted) {
 
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-red-500 pl-3">
-              Least Accessed Tables
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-red-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Least Accessed Tables
+              </CardTitle>
+              <InfoTooltip text="These are 'Cold' tables. Nobody is really querying them. If they are also large in size, they should be archived or deleted." />
+            </div>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {leastAccessed && leastAccessed.length > 0 ? (
               <TableScroll maxHeight="400px">
                 <table className="w-full text-sm text-left">

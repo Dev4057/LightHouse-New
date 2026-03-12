@@ -1125,3 +1125,48 @@ export async function getOverPrivilegedRoles(): Promise<any[]> {
   `;
   return executeQuery<any>(sql);
 }
+// Add this to src/lib/snowflake/queries.ts
+export async function getAuthFailuresTrend(startDate: string, endDate: string) {
+  const query = `
+    SELECT 
+      TO_CHAR(DATE_TRUNC('DAY', EVENT_TIMESTAMP), 'Mon DD') as DATE_LABEL,
+      COUNT(*) as FAILURE_COUNT
+    FROM SNOWFLAKE.ACCOUNT_USAGE.LOGIN_HISTORY
+    WHERE IS_SUCCESS = 'NO'
+      AND EVENT_TIMESTAMP >= :1 
+      AND EVENT_TIMESTAMP <= :2
+    GROUP BY DATE_TRUNC('DAY', EVENT_TIMESTAMP)
+    ORDER BY DATE_TRUNC('DAY', EVENT_TIMESTAMP) ASC;
+  `
+  return executeQuery(query, [startDate, endDate])
+}
+// 1. The Performance Trend (For "Failed Queries" and "High Avg Time")
+export async function getPerformanceTrend(startDate: string, endDate: string) {
+  const query = `
+    SELECT 
+      TO_CHAR(DATE_TRUNC('DAY', START_TIME), 'Mon DD') as DATE_LABEL,
+      COUNT(CASE WHEN EXECUTION_STATUS = 'FAIL' THEN 1 END) as FAILED_COUNT,
+      AVG(TOTAL_ELAPSED_TIME) / 1000 as AVG_TIME_SECONDS
+    FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+    WHERE START_TIME >= :1 
+      AND START_TIME <= :2
+    GROUP BY DATE_TRUNC('DAY', START_TIME)
+    ORDER BY DATE_TRUNC('DAY', START_TIME) ASC;
+  `
+  return executeQuery(query, [startDate, endDate])
+}
+
+// 2. The Cost/Idle Trend (For "Idle Warehouse" and "High Cost")
+export async function getCostTrend(startDate: string, endDate: string) {
+  const query = `
+    SELECT 
+      TO_CHAR(DATE_TRUNC('DAY', START_TIME), 'Mon DD') as DATE_LABEL,
+      SUM(CREDITS_USED) as CREDITS_USED
+    FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
+    WHERE START_TIME >= :1 
+      AND START_TIME <= :2
+    GROUP BY DATE_TRUNC('DAY', START_TIME)
+    ORDER BY DATE_TRUNC('DAY', START_TIME) ASC;
+  `
+  return executeQuery(query, [startDate, endDate])
+}
