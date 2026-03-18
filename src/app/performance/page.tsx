@@ -10,11 +10,15 @@ import { Loader, AlertCircle, Clock, Zap, Activity, AlertTriangle, Terminal } fr
 import { formatSeconds, formatNumber, shortenText } from '@/lib/formatting'
 import WidgetAIInsight from '@/components/ai/WidgetAIInsight'
 import { useTheme } from 'next-themes'
+import InfoTooltip from '@/components/ui/InfoTooltip' // ✨ Imported Tooltip
 
 // ── GLASSMORPHISM TAILWIND CLASSES (Customized to 900/40 opacity) ────────────
-const glassCard = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 overflow-hidden transition-all duration-300"
-const glassHeader = "px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md"
-const glassTableHead = "bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-10 border-b border-slate-200/50 dark:border-slate-700/50"
+// ✨ FIX: Removed overflow-hidden so tooltips don't clip
+const glassCard = "bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-xl dark:shadow-2xl min-w-0 transition-all duration-300 relative z-10"
+// ✨ FIX: Added z-50 to header
+const glassHeader = "px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/40 dark:bg-slate-800/40 backdrop-blur-md relative z-50"
+// ✨ FIX: Lowered table header z-index
+const glassTableHead = "bg-slate-100/60 dark:bg-slate-950/60 backdrop-blur-xl sticky top-0 z-0 border-b border-slate-200/50 dark:border-slate-700/50"
 const glassRow = "border-b border-slate-200/50 dark:border-slate-800/50 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors group"
 
 // ── Reusable Components ──────────────────────────────────────────────────────
@@ -121,7 +125,7 @@ export default function PerformancePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 w-full min-w-0 overflow-hidden">
+      <div className="space-y-6 w-full min-w-0"> {/* ✨ Removed overflow-hidden */}
         
         {/* Header & Date Picker */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -159,14 +163,17 @@ export default function PerformancePage() {
           {/* Performance Trend (Area Chart) */}
           <Card className={glassCard}>
             <CardHeader className={glassHeader}>
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-emerald-500 pl-3">
-                Query Performance Trend
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Query Performance Trend
+                </CardTitle>
+                <InfoTooltip text="Tracks the average speed of your database day over day. If you see sudden spikes here, a recent code deployment or heavy reporting job is slowing down the entire system." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Average execution time over time
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 min-w-0">
+            <CardContent className="p-6 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
               {trendData?.length ? (
                 <div className="w-full h-[320px] overflow-hidden">
                   <ResponsiveContainer width="100%" height="100%">
@@ -194,19 +201,21 @@ export default function PerformancePage() {
           {/* Horizontal Bar Chart for Query Types */}
           <Card className={glassCard}>
             <CardHeader className={glassHeader}>
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-blue-500 pl-3">
-                Execution Time by Query Type
-              </CardTitle>
+              <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-3">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Execution Time by Query Type
+                </CardTitle>
+                <InfoTooltip text="Groups all queries by the type of work they are doing (like SELECT vs UPDATE). If simple 'SELECT' queries are at the top of this list, your tables likely need to be clustered." />
+              </div>
               <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
                 Longest running query operations
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 min-w-0">
+            <CardContent className="p-6 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
               {sortedQueryTypes?.length ? (
                 <div className="w-full h-[320px] overflow-hidden">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={sortedQueryTypes.slice(0, 10)} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
-                      {/* FIX: <defs> correctly placed inside the Chart root, NOT inside the Bar */}
                       <defs>
                         <linearGradient id="queryTypeHorizontalGrad" x1="0" y1="0" x2="1" y2="0">
                           <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
@@ -215,7 +224,6 @@ export default function PerformancePage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={true} vertical={false} />
                       <XAxis type="number" stroke={axisColor} tick={{ fontSize: 10 }} />
-                      {/* FIX: Increased width to 105 so labels fit perfectly */}
                       <YAxis type="category" dataKey="QUERY_TYPE" stroke={axisColor} tick={{ fontSize: 10 }} width={105} tickFormatter={(val) => shortenText(val, 16)} />
                       <Tooltip contentStyle={glassTooltip} cursor={{ fill: gridColor }} formatter={(v) => [formatSeconds(v as number), 'Avg Time']} />
                       <Bar dataKey="AVERAGE_EXECUTION_SECONDS" radius={[0, 4, 4, 0]} maxBarSize={20} fill="url(#queryTypeHorizontalGrad)" />
@@ -232,14 +240,17 @@ export default function PerformancePage() {
         {/* ── USER PERFORMANCE TABLE ── */}
         <Card className={glassCard}>
           <CardHeader className={glassHeader}>
-            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider border-l-2 border-purple-500 pl-3">
-              Average Execution Time by User
-            </CardTitle>
+            <div className="flex items-center gap-2 border-l-2 border-purple-500 pl-3">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Average Execution Time by User
+              </CardTitle>
+              <InfoTooltip text="Identifies which specific people or automated service accounts are writing the slowest SQL code. Perfect for knowing who needs query optimization training." />
+            </div>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 pl-3.5 mt-1">
               Mart-backed per-user daily average execution timing
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 min-w-0">
+          <CardContent className="p-0 min-w-0 relative z-0"> {/* ✨ Added relative z-0 */}
             {userPerf?.length ? (
               <TableScroll maxHeight="400px">
                 <table className="w-full text-sm text-left">

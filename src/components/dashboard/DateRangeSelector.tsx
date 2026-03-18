@@ -53,27 +53,27 @@ export default function DateRangeSelector({ value, onChange }: DateRangeSelector
         onClick={() => setShowPicker(!showPicker)}
         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all duration-200 ${
           showPicker 
-            ? 'bg-slate-800/80 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-blue-400' 
-            : 'bg-slate-900/50 backdrop-blur-md border-slate-700/50 text-slate-200 hover:bg-slate-800/80 hover:border-slate-600'
+            ? 'bg-blue-50 dark:bg-slate-800/80 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-blue-600 dark:text-blue-400' 
+            : 'bg-white/80 dark:bg-slate-900/50 backdrop-blur-md border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-600'
         }`}
       >
         <Calendar className="w-4 h-4" />
         <span className="text-sm font-semibold tracking-wide">
           {formatDate(value.start)} - {formatDate(value.end)}
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ml-1 ${showPicker ? 'rotate-180 text-blue-400' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ml-1 ${showPicker ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''}`} />
       </button>
 
       {/* DROPDOWN MENU */}
       {showPicker && (
-        <div className="absolute right-0 mt-3 w-80 bg-slate-900/80 backdrop-blur-xl border border-slate-700/60 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute right-0 mt-3 w-80 bg-white/95 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/60 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-200">
           
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/30">
-            <h3 className="text-sm font-semibold text-slate-100">Select Date Range</h3>
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Select Date Range</h3>
             <button
               onClick={() => setShowPicker(false)}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-md transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-md transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -91,7 +91,7 @@ export default function DateRangeSelector({ value, onChange }: DateRangeSelector
                   <button
                     key={preset.days}
                     onClick={() => handlePreset(preset.days)}
-                    className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-300 rounded-lg hover:bg-blue-500 hover:border-blue-400 hover:text-white hover:shadow-[0_0_12px_rgba(59,130,246,0.4)] transition-all text-xs font-medium"
+                    className="px-3 py-2 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-blue-500 dark:hover:bg-blue-500 hover:border-blue-400 hover:text-white dark:hover:text-white hover:shadow-[0_0_12px_rgba(59,130,246,0.4)] transition-all text-xs font-medium"
                   >
                     {preset.label}
                   </button>
@@ -104,11 +104,11 @@ export default function DateRangeSelector({ value, onChange }: DateRangeSelector
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">
                 Custom Range
               </div>
-              <div className="space-y-3 bg-slate-950/30 p-3 rounded-lg border border-slate-800/50">
+              <div className="space-y-3 bg-slate-50 dark:bg-slate-950/30 p-3 rounded-lg border border-slate-200 dark:border-slate-800/50">
                 
                 {/* Start Date */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-medium text-slate-400">START DATE</label>
+                  <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">START DATE</label>
                   <input
                     type="date"
                     value={value.start.toISOString().split('T')[0]}
@@ -118,13 +118,13 @@ export default function DateRangeSelector({ value, onChange }: DateRangeSelector
                         start: new Date(e.target.value),
                       })
                     }
-                    className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all custom-date-input w-full"
+                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 text-sm rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all custom-date-input w-full"
                   />
                 </div>
                 
                 {/* End Date */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-medium text-slate-400">END DATE</label>
+                  <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400">END DATE</label>
                   <input
                     type="date"
                     value={value.end.toISOString().split('T')[0]}
@@ -134,7 +134,7 @@ export default function DateRangeSelector({ value, onChange }: DateRangeSelector
                         end: new Date(e.target.value),
                       })
                     }
-                    className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all custom-date-input w-full"
+                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-200 text-sm rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all custom-date-input w-full"
                   />
                 </div>
               </div>

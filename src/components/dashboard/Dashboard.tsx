@@ -55,18 +55,18 @@ export default function Dashboard() {
     )
   }
 
-  const allKpiCards = kpiData
+const allKpiCards = kpiData
     ? [
-        { label: `${creditUnitLabel} Used`, value: formatCreditValue(kpiData.TOTAL_CREDITS_USED || 0), change: '+12.5%', icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
-        { label: 'Queries Executed', value: formatNumber(kpiData.TOTAL_QUERIES_EXECUTED || 0), change: '+8.2%', icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
-        { label: 'Avg Query Time', value: formatSeconds(kpiData.AVERAGE_QUERY_TIME || 0), change: '-3.1%', icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
-        { label: 'Failed Queries', value: formatNumber(kpiData.FAILED_QUERY_COUNT || 0), change: '-1.2%', icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: `${creditUnitLabel} Used`, value: formatCreditValue(kpiData.TOTAL_CREDITS_USED || 0), change: undefined, icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
+        { label: 'Queries Executed', value: formatNumber(kpiData.TOTAL_QUERIES_EXECUTED || 0), change: undefined, icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Avg Query Time', value: formatSeconds(kpiData.AVERAGE_QUERY_TIME || 0), change: undefined, icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Failed Queries', value: formatNumber(kpiData.FAILED_QUERY_COUNT || 0), change: undefined, icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
       ]
     : [
-        { label: `${creditUnitLabel} Used`, value: '-', change: '-', icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
-        { label: 'Queries Executed', value: '-', change: '-', icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
-        { label: 'Avg Query Time', value: '-', change: '-', icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
-        { label: 'Failed Queries', value: '-', change: '-', icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: `${creditUnitLabel} Used`, value: '-', change: undefined, icon: 'zap', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN'] },
+        { label: 'Queries Executed', value: '-', change: undefined, icon: 'activity', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Avg Query Time', value: '-', change: undefined, icon: 'clock', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
+        { label: 'Failed Queries', value: '-', change: undefined, icon: 'database', allowedRoles: ['WORKSPACE_ADMIN', 'COMPUTE_ADMIN', 'DEVELOPER'] },
       ]
 
   const visibleKpiCards = allKpiCards.filter(card => card.allowedRoles.includes(userRole))
@@ -84,7 +84,7 @@ export default function Dashboard() {
 
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${visibleKpiCards.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 min-w-0`}>
         {visibleKpiCards.map((kpi, idx) => (
-          <KPICard key={idx} label={kpi.label} value={kpi.value} change={kpi.change} icon={kpi.icon as any} />
+          <KPICard key={idx} label={kpi.label} value={kpi.value} change={kpi.change || ''} icon={kpi.icon as any} />
         ))}
       </div>
 
