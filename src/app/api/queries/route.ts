@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt' // ✨ The Bouncer
+
+// ❄️ SNOWFLAKE IMPORTS (Raw logs, diagnostics, user data)
 import {
   getExpensiveQueries,
   getLongestQueries,
   getFailedQueries,
   getQueryTrend,
-  getQueryTypeMetrics,
+  getQueryTypeMetrics, // ⬅️ ADDED THIS BACK
   getUserQueryPerformance,
-  getQueryHeatmapData,
   getSpilledQueries,
   getPruningIssues,
   getHighFrequencyQueries,
 } from '@/lib/snowflake/queries'
+
+// ⚡ DUCKDB IMPORTS (Instant metric aggregations)
+import { 
+  getDuckDBQueryHeatmap 
+} from '@/lib/duckdb/queries'
+
 import type { APIResponse } from '@/types'
 
 // 🚨 Update this list to match exactly what you see in the JSON
@@ -40,14 +47,18 @@ export async function GET(request: NextRequest) {
 
     let data: any
 
+    // ✨ THE HYBRID ROUTER
     switch (type) {
+      // ---> ⚡ Route to DuckDB (Lightning Fast Aggregations)
+      case 'heatmap': data = await getDuckDBQueryHeatmap(startDate, endDate); break
+      
+      // ---> ❄️ Route to Snowflake (Deep Diagnostics & Exact Timing)
+      case 'by-type': data = await getQueryTypeMetrics(startDate, endDate); break // ⬅️ FIXED: Now using Snowflake's function
       case 'expensive': data = await getExpensiveQueries(startDate, endDate, limit); break
       case 'longest': data = await getLongestQueries(startDate, endDate, limit); break
       case 'failed': data = await getFailedQueries(startDate, endDate, limit); break
       case 'trend': data = await getQueryTrend(startDate, endDate); break
-      case 'by-type': data = await getQueryTypeMetrics(startDate, endDate); break
       case 'by-user': data = await getUserQueryPerformance(startDate, endDate); break
-      case 'heatmap': data = await getQueryHeatmapData(startDate, endDate); break
       case 'spill': data = await getSpilledQueries(startDate, endDate, limit); break
       case 'prune': data = await getPruningIssues(startDate, endDate, limit); break
       case 'high-frequency': data = await getHighFrequencyQueries(startDate, endDate); break

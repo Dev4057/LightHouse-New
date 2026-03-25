@@ -16,6 +16,7 @@ import {
   getIdentityRiskSummary,
   getAccountAdmins,
   getOverPrivilegedRoles,
+  getAuthFailuresTrend, // ✅ Properly imported
 } from '@/lib/snowflake/queries'
 import type { APIResponse } from '@/types'
 
@@ -57,6 +58,11 @@ export async function GET(request: NextRequest) {
         data = await getOverPrivilegedRoles()
         break
       
+      // 🚀 THE FIX: Added the missing auth_failures_trend case!
+      case 'auth_failures_trend':
+        data = await getAuthFailuresTrend(startDate, endDate)
+        break
+
       // Existing Functions
       case 'users':
         data = await getUsers()

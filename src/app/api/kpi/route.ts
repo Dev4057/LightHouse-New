@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
-import { getKPIMetrics, getPerformanceTrend } from '@/lib/snowflake/queries'
+import { getPerformanceTrend, getKPIMetrics as getSnowflakeKPIs } from '@/lib/snowflake/queries'
+import { getDuckDbKPIs } from '@/lib/duckdb/queries' // ✨ Uncommented and imported!
 import type { APIResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -32,11 +33,25 @@ export async function GET(request: NextRequest) {
 
     let data
 
-    // ✨ Route to the correct Snowflake query based on 'type'
+    // ✨ Route to the correct queries based on 'type'
     if (type === 'performance_trend') {
+      // Keep this hitting Snowflake (or migrate to DuckDB later if you want!)
       data = await getPerformanceTrend(startDate, endDate)
     } else {
-      data = await getKPIMetrics(startDate, endDate)
+      // ⚡ HYBRID FETCH: Run both local DuckDB and remote Snowflake in parallel
+      const [snowflakeData, duckDbData] = await Promise.all([
+        getSnowflakeKPIs(startDate, endDate),
+        getDuckDbKPIs(startDate, endDate)
+      ])
+
+      // Merge the data perfectly for your frontend components
+      data = {
+        TOTAL_CREDITS_USED: snowflakeData.TOTAL_CREDITS_USED,
+        COST_PER_DAY: snowflakeData.COST_PER_DAY,
+        AVERAGE_QUERY_TIME: snowflakeData.AVERAGE_QUERY_TIME,
+        TOTAL_QUERIES_EXECUTED: duckDbData.TOTAL_QUERIES_EXECUTED, // From DuckDB!
+        FAILED_QUERY_COUNT: duckDbData.FAILED_QUERY_COUNT          // From DuckDB!
+      }
       
       // 2. FIELD-LEVEL SECURITY
       // If the user is a Developer, we strip out the financial field

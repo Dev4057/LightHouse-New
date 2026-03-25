@@ -7,6 +7,8 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  // Tell Next.js not to bundle DuckDB's native C++ binaries
+  serverExternalPackages: ['duckdb', 'duckdb-async'],
 };
 
 module.exports = nextConfig;

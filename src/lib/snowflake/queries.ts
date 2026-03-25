@@ -963,64 +963,42 @@ export async function getPruningIssues(startDate: string, endDate: string, limit
   `
   return executeQuery<any>(sql)
 }
-
 export async function getHighFrequencyQueries(startDate: string, endDate: string): Promise<any[]> {
   const sql = `
-    WITH pattern_agg AS (
-      SELECT
-        QUERY_FINGERPRINT,
-        SAMPLE_QUERY_TEXT,
-        SUM(QUERY_COUNT) AS QUERY_COUNT,
-        ROUND(AVG(AVG_EXECUTION_SECONDS), 2) AS AVG_EXECUTION_SECONDS,
-        ROUND(SUM(TOTAL_EXECUTION_SECONDS), 2) AS TOTAL_EXECUTION_SECONDS,
-        ROUND(AVG(DISTINCT_USERS), 2) AS AVG_DAILY_DISTINCT_USERS,
-        ROUND(AVG(DISTINCT_WAREHOUSES), 2) AS AVG_DAILY_DISTINCT_WAREHOUSES,
-        COUNT(*) AS DAYS_PRESENT
-      FROM ${q('HIGH_FREQUENCY_QUERIES_TOP')}
-      WHERE ${dateBetween('SNAPSHOT_DATE', startDate, endDate)}
-      GROUP BY QUERY_FINGERPRINT, SAMPLE_QUERY_TEXT
-    ),
-    top_patterns AS (
-      SELECT *
-      FROM pattern_agg
-      QUALIFY ROW_NUMBER() OVER (ORDER BY QUERY_COUNT DESC, TOTAL_EXECUTION_SECONDS DESC) <= 25
-    ),
-    users_by_pattern AS (
-      SELECT
-        hf.QUERY_FINGERPRINT,
-        LISTAGG(DISTINCT TRIM(f.value::string), ', ') WITHIN GROUP (ORDER BY TRIM(f.value::string)) AS USER_NAMES
-      FROM ${q('HIGH_FREQUENCY_QUERIES_TOP')} hf,
-           LATERAL FLATTEN(input => SPLIT(COALESCE(hf.USER_NAMES, ''), ',')) f
-      WHERE ${dateBetween('hf.SNAPSHOT_DATE', startDate, endDate)}
-        AND TRIM(f.value::string) <> ''
-      GROUP BY hf.QUERY_FINGERPRINT
-    ),
-    warehouses_by_pattern AS (
-      SELECT
-        hf.QUERY_FINGERPRINT,
-        LISTAGG(DISTINCT TRIM(f.value::string), ', ') WITHIN GROUP (ORDER BY TRIM(f.value::string)) AS WAREHOUSE_NAMES
-      FROM ${q('HIGH_FREQUENCY_QUERIES_TOP')} hf,
-           LATERAL FLATTEN(input => SPLIT(COALESCE(hf.WAREHOUSE_NAMES, ''), ',')) f
-      WHERE ${dateBetween('hf.SNAPSHOT_DATE', startDate, endDate)}
-        AND TRIM(f.value::string) <> ''
-      GROUP BY hf.QUERY_FINGERPRINT
-    )
     SELECT
-      t.SAMPLE_QUERY_TEXT,
-      t.QUERY_COUNT,
-      t.AVG_EXECUTION_SECONDS,
-      t.TOTAL_EXECUTION_SECONDS,
-      t.AVG_DAILY_DISTINCT_USERS,
-      t.AVG_DAILY_DISTINCT_WAREHOUSES,
-      t.DAYS_PRESENT,
-      COALESCE(u.USER_NAMES, '-') AS USER_NAMES,
-      COALESCE(w.WAREHOUSE_NAMES, '-') AS WAREHOUSE_NAMES
-    FROM top_patterns t
-    LEFT JOIN users_by_pattern u ON t.QUERY_FINGERPRINT = u.QUERY_FINGERPRINT
-    LEFT JOIN warehouses_by_pattern w ON t.QUERY_FINGERPRINT = w.QUERY_FINGERPRINT
-    ORDER BY t.QUERY_COUNT DESC, t.TOTAL_EXECUTION_SECONDS DESC
+      ANY_VALUE(QUERY_TEXT) AS "QUERY_TEXT", -- ✨ Match React exactly
+      COUNT(*) AS "EXECUTION_COUNT",         -- ✨ Match React exactly
+      ROUND(AVG(TOTAL_ELAPSED_TIME) / 1000, 2) AS "AVG_EXECUTION_SECONDS",
+      ROUND(SUM(TOTAL_ELAPSED_TIME) / 1000, 2) AS "TOTAL_EXECUTION_SECONDS",
+      COUNT(DISTINCT USER_NAME) AS "AVG_DAILY_DISTINCT_USERS",
+      COUNT(DISTINCT WAREHOUSE_NAME) AS "AVG_DAILY_DISTINCT_WAREHOUSES",
+      COUNT(DISTINCT DATE_TRUNC('day', START_TIME)) AS "DAYS_PRESENT"
+    FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+    WHERE START_TIME >= '${startDate}'::DATE
+      AND START_TIME < DATEADD(day, 1, '${endDate}'::DATE)
+      AND QUERY_TEXT IS NOT NULL
+      AND QUERY_TEXT != ''
+    GROUP BY QUERY_HASH
+    HAVING COUNT(*) > 5
+    ORDER BY "EXECUTION_COUNT" DESC
+    LIMIT 25
   `
-  return executeQuery<any>(sql)
+  
+  const rows = await executeQuery<any>(sql);
+
+  if (!rows || rows.length === 0) return [];
+
+  // Guarantee they are numbers for the frontend math functions
+  return rows.map((row, index) => ({
+    QUERY_FINGERPRINT: `key-${index}`,
+    QUERY_TEXT: row.QUERY_TEXT ?? row.query_text ?? '-',
+    EXECUTION_COUNT: Number(row.EXECUTION_COUNT ?? row.execution_count ?? 0),
+    AVG_EXECUTION_SECONDS: Number(row.AVG_EXECUTION_SECONDS ?? row.avg_execution_seconds ?? 0),
+    TOTAL_EXECUTION_SECONDS: Number(row.TOTAL_EXECUTION_SECONDS ?? row.total_execution_seconds ?? 0),
+    AVG_DAILY_DISTINCT_USERS: Number(row.AVG_DAILY_DISTINCT_USERS ?? row.avg_daily_distinct_users ?? 1),
+    AVG_DAILY_DISTINCT_WAREHOUSES: Number(row.AVG_DAILY_DISTINCT_WAREHOUSES ?? row.avg_daily_distinct_warehouses ?? 1),
+    DAYS_PRESENT: Number(row.DAYS_PRESENT ?? row.days_present ?? 1)
+  }));
 }
 
 export async function getRecommendations(startDate: string, endDate: string): Promise<any[]> {
